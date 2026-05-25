@@ -1,0 +1,116 @@
+function myFunction() {
+  
+}
+function myFunction() {
+  
+}
+// Serves the HTML frontend interface to users when they open the Web App URL
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile('Index')
+      .setTitle('Patient Insurance Data Entry')
+      .setXTemplateAttributes({safeFiltering: true})
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+// Handles data submission requests coming from the HTML frontend form
+function doPost(e) {
+  // 1. Validate incoming request data
+  if (!e || !e.postData || !e.postData.contents) {
+    return ContentService
+      .createTextOutput("Error: No data provided.")
+      .setMimeType(ContentService.MimeType.TEXT);
+  }
+
+  // 2. Parse incoming JSON payload
+  var data;
+  try {
+    data = JSON.parse(e.postData.contents);
+  } catch (err) {
+    return ContentService
+      .createTextOutput("Error: Invalid JSON format.")
+      .setMimeType(ContentService.MimeType.TEXT);
+  }
+
+  // Ensure data is handled as an array
+  if (!Array.isArray(data)) {
+    data = [data];
+  }
+
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  sheet.clear();
+
+  // 3. Define structure columns
+  var headers = [
+    "S.No", "Patient Name", "UHID", "Mobile Number", "Insurance Limit", "IPD No", 
+    "TPA/Ins. Name", "Settlement Summary", "DOA", "DOD", "Insurance ID No", 
+    "Claim No", "Policy No", "EMP ID No", "Bill Invoice No", "Total Bill", 
+    "Approved", "Discount", "Deduction", "Patient Pay", "Settlement Amount", 
+    "TDS Amount", "Payment/UTR", "Attender Name", "Relation", "Insurance Address", 
+    "Bank Name", "Bank Account No.", "IFSC Code", "Bank Address", "Courier Details", 
+    "Courier Date", "Insurance Company", "Diagnosis", "SurgeryName", "Remark", "Status"
+  ];
+
+  // 4. Batch process data in memory
+  var rows = [headers]; // Initialize array with headers as the first row
+
+  for (var i = 0; i < data.length; i++) {
+    var p = data[i];
+    rows.push([
+      i + 1,
+      p.patientName || "",
+      p.uhid || "",
+      p.mobile || "",
+      p.insuranceLimit || "",
+      p.ipdNo || "",
+      p.tpaInsName || "",
+      p.settlementSummary || "",
+      p.doa || "",
+      p.dod || "",
+      p.insuranceIdNo || "",
+      p.claimNo || "",
+      p.policyNo || "",
+      p.empIdNo || "",
+      p.billInvoiceNo || "",
+      p.totalBill || "",
+      p.approved || "",
+      p.discount || "",
+      p.deduction || "",
+      p.patientPay || "",
+      p.settlementAmount || "",
+      p.tdsAmount || "",
+      p.paymentUtr || "",
+      p.attenderName || "",
+      p.relation || "",
+      p.insuranceAddress || "",
+      p.bankName || "",
+      p.bankAccountNo || "",
+      p.ifscCode || "",
+      p.bankAddress || "",
+      p.courierDetails || "",
+      p.courierDate || "",
+      p.insuranceCompany || "",
+      p.diagnosis || "",
+      p.surgeryName || "",
+      p.remark || "",
+      p.status || ""
+    ]);
+  }
+
+  // 5. Single batch write and left alignment formatting
+  var dataRange = sheet.getRange(1, 1, rows.length, headers.length);
+  dataRange.setValues(rows);
+  dataRange.setHorizontalAlignment("left"); // Sets all text rows and columns to left side alignment
+
+  // 6. Apply visual formatting to header row
+  sheet.getRange(1, 1, 1, headers.length)
+    .setFontWeight("bold")
+    .setBackground("#007bff")
+    .setFontColor("white");
+
+  // 7. Auto-adjust columns to prevent text clipping
+  sheet.autoResizeColumns(1, headers.length);
+
+  return ContentService
+    .createTextOutput("Success")
+    .setMimeType(ContentService.MimeType.TEXT);
+}
