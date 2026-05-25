@@ -1,0 +1,2035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deepak Shriwas Data </title>
+<!-- Robust SheetJS Library for Excel/Google Sheets Export -->
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+<style>
+body { font-family: Arial, sans-serif; background:#ffffff; margin:20px; }
+.dashboard { display:flex; gap:15px; margin-bottom:20px; flex-wrap:wrap; }
+.card { background:lightgray; padding:15px; border-radius:8px; flex:1; text-align:center; box-shadow:0 2px 5px hsla(88, 100%, 59%, 0.1); border-top: 4px solid #007bff; }
+.card b { font-size:20px; color:#1900ff; }
+.card-blue { border-top-color: #1900ff; }
+.card-blue b { color: #1900ff; }
+.card-yellow { border-top-color: #ffee00; }
+.card-yellow b { color: #ffee00; }
+.card-brown { border-top-color: #8b4513; }
+.card-brown b { color: #8b4513; }
+.card-darkgreen { border-top-color: #006400; }
+.card-darkgreen b { color: #006400; }
+.card-green { border-top-color: #15ff29; }
+.card-green b { color: #095510; }
+.card-maroon { border-top-color: #4d0505; }
+.card-maroon b { color: #4d0505; }
+/* Specialized style for Denial Card */
+.card-red { border-top: 4px solid #ff273d; }
+.card-red b { color: #ff273d; }
+
+.summary-box { background: #b7f19c; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-left: 5px solid #28a745; display: flex; flex-wrap: wrap; gap: 20px; }
+.summary-item { flex: 1; min-width: 300px; }
+.tpa-select { padding: 10px; width: 100%; border-radius: 5px; border: 1px solid #28a745; font-weight: bold; margin-bottom: 10px; background: #f1f8f4; }
+
+.form-box { background:#c4c4c4; padding:20px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; border-left: 4px solid #28a745; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; }
+label { font-size: 13px; font-weight: bold; color: #000; }
+input, select, button { padding: 10px; border:1px solid #ccc; border-radius:8px; width: 100%; box-sizing: border-box; font-size: 16px; font-weight: bold; } 
+button {
+    background: #007bff;
+    color: white;                               /* Base style for all buttons */
+    border: 3px solid #007bff;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 15px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin-right: 8px;
+    margin-bottom: 5px;
+    transition: background 0.2s, box-shadow 0.2s;
+    min-width:100px;
+    min-height: 28px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.07);
+}
+button:last-child {
+    margin-right: 0;
+}
+.auto-sync-btn {
+    min-width: 110px;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+}
+button:active {
+    box-shadow: 0 0 0 2px #007bff33;
+}
+/* Orange button for Calculate Invoice */
+button[style*="background:#ff6f00"] {
+    background: #ff6f00 !important;
+    color: #fff;
+}
+.btn-update { background:green; display:none; }
+.btn-edit { background:orange; margin-right: 5px; color:white; }
+.btn-del { background:#dc3545; color:white; }
+.filters { margin:15px 0; display:flex; gap:10px; flex-wrap:wrap; background: #e8f5e9; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #28a745; }
+table { width:100%; border-collapse:collapse; background:lightgray; }
+th, td { padding:10px; border:1px solid #ddd; text-align: left; font-size: 8px; }
+th { background:#007bff; color:white; white-space: nowrap; }
+tr:hover { background-color: #f9f9f9; }
+/* GST Invoice Styles */
+.invoice-table { width: 100%; border-collapse: collapse; border: 1px solid black; margin-top: 20px; background: lightgray; }
+.invoice-table th, .invoice-table td {
+    border: 1px solid black;
+    padding: 7px 6px;
+    text-align: center;
+    font-size: 12px;
+}
+.invoice-table .left { text-align: LEFT; }
+.invoice-table .right { text-align: right; }
+.invoice-table .header-row th {
+    background-color: black;
+    color: white;
+    font-weight: bold;
+    font-size: 13px;
+}
+.invoice-table .empty-row td { height: 20px; }
+.invoice-table .total-section { font-weight: bold; }
+.invoice-table .amount-cell {
+    font-size: 20px;
+    font-weight: bold;
+    color: #222;
+}
+.invoice-section { display: none; background: #e8f5e9; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-left: 4px solid #9e06e4; }
+.invoice-section.show { display: block; }
+.invoice-section h3 {
+    color: black;
+    font-size: 17px;
+    font-weight: bold;
+    margin-top: 0;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 10px;
+}
+</style>
+</head>
+
+
+<body>
+<!-- Letterhead with logos and centered hospital name -->
+
+
+<!--  name -->
+<h2> Patient Management by Deepak</h2>
+<!-- DESHBOARD CLICK FEATURE -->
+<div class="dashboard">
+    <div class="card card-blue" onclick="filterByStatus('Total Patients')" style="cursor:pointer;">Total Patients<br><b id="totalPatientsCount">0</b></div>
+    <div class="card card-blue" onclick="filterByStatus('Admitted')" style="cursor:pointer;">Admitted<br><b id="totalAdmittedCount">0</b></div>
+    <div class="card card-green" onclick="filterByStatus('Initial Approved')" style="cursor:pointer;">Initial Approved<br><b id="totalInitialApprovedCount">0</b></div>
+    <div class="card card-green" onclick="filterByStatus('Discharge')" style="cursor:pointer;">Discharge<br><b id="totalDischargeCount">0</b></div>
+    <div class="card card-green" onclick="filterByStatus('Discharge Approved')" style="cursor:pointer;">Discharge Approved<br><b id="totalDischargeApprovedCount">0</b></div>
+    <div class="card card-red" onclick="filterByStatus('Denial')" style="cursor:pointer;">Denial<br><b id="totalDenialCount">0</b></div>
+    <div class="card card-blue" onclick="filterByStatus('Pending')" style="cursor:pointer;">Pending<br><b id="totalPendingCount">0</b></div>
+    <div class="card card-green" onclick="filterByStatus('Settled')" style="cursor:pointer;">Settled<br><b id="totalSettlementAmountSum">0</b></div>
+    <div class="card card-blue">Total Bill<br>₹<b id="totalBillSum">0</b></div>
+    <div class="card card-brown">Approved<br>₹<b id="totalApprovedSum">0</b></div>
+    <div class="card card-maroon">Discount<br>₹<b id="totalDiscountSum">0</b></div>
+    <div class="card card-green">Deduction<br>₹<b id="totalDeductionSum">0</b></div>
+    <div class="card card-darkgreen">Patient Pay<br>₹<b id="totalPatientPaySum">0</b></div>
+   
+</div>
+<!-- FOLDER LOCATION SETTINGS - COLLAPSIBLE -->
+<div style="margin-bottom:20px;">
+    <button onclick="toggleFolderSettings()" style="background:#808181; width:100%; padding:12px; font-size:17px; border:none; border-radius:5px; color:rgb(0, 0, 0); font-weight:bold; cursor:pointer;">⚙️ FOLDER SETTINGS ⬇️</button>
+    
+    <div id="folderSettingsPanel" style="display:none; background:#e8f5e9; padding:20px; border-radius:8px; margin-top:10px; border-left:5px solid #28a745;">
+        <h3 style="margin-top:0; color:#333;">📁 Patient Folder Location</h3>
+        
+        <div style="margin-bottom:15px;">
+            <label style="display:block; font-weight:bold; color:#333; margin-bottom:8px;">Choose Folder Location:</label>
+            <select id="folderSelect" onchange="onFolderSelectChange()" style="width:100%; padding:10px; border:2px solid #ffc107; border-radius:5px; font-size:11px; margin-bottom:10px;">
+                <option value="">-- Select a location --</option>
+                <option value="C:\Users\DEEPAK\Desktop">Desktop</option>
+                <option value="C:\Users\DEEPAK\Documents">Documents</option>
+                <option value="C:\Users\DEEPAK\Downloads">Downloads</option>
+                <option value="C:\Users\DEEPAK\Desktop\Patients">Patients (on Desktop)</option>
+            </select>
+        </div>
+        
+        <div style="margin-bottom:15px;">
+            <label style="display:block; font-weight:bold; color:#333; margin-bottom:8px;">Enter Folder Path:</label>
+            <input type="text" id="folderPath" placeholder="e.g., C:\Users\DEEPAK\Desktop\Patients" style="width:100%; padding:10px; border:2px solid #ffc107; border-radius:5px; font-size:11px;">
+            <small style="color:#666; display:block; margin-top:8px;">💡 Enter the full path where you want patient folders to be created</small>
+        </div>
+        
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button onclick="saveFolderPath()" style="background:#28a745; color:white; padding:10px 20px; border:none; border-radius:5px; cursor:pointer; font-weight:bold; flex:1; min-width:150px;">💾 SAVE PATH</button>
+            <button onclick="resetFolderPath()" style="background:#6c757d; color:white; padding:10px 20px; border:none; border-radius:5px; cursor:pointer; font-weight:bold; flex:1; min-width:150px;">↺ Reset to Desktop</button>
+            <button onclick="toggleFolderSettings()" style="background:#dc3545; color:white; padding:10px 20px; border:none; border-radius:5px; cursor:pointer; font-weight:bold; flex:1; min-width:150px;">❌ Close</button>
+        </div>
+        
+        <div style="background:lightgray; padding:12px; border-radius:5px; margin-top:15px; border-left:4px solid #0066cc;">
+            <small><strong>Currently Saved:</strong></small><br>
+            <small id="currentPathDisplay" style="color:#0066cc; font-weight:bold;">C:\Users\DEEPAK\Desktop</small>
+        </div>
+    </div>
+</div>
+
+<div class="form-box">
+    <div class="grid">
+        <div><label>Patient Name</label><input id="name"></div>
+        <div><label>UHID</label><input id="uhid"></div>
+        <div><label>Mobile Number</label><input id="mobile" placeholder="Mobile Number"></div>
+        <div><label>Insurance Limit</label><input id="insuranceLimit" placeholder="Insurance Limit"></div>
+        <div><label>IPD No</label><input id="ipdNo" placeholder="IPD No"></div>
+        <div><label>Diagnosis</label><input id="diagnosis" placeholder="Diagnosis"></div>
+        <div><label>TPA/Insurance Name</label>
+            <select id="tpa">
+                <option value="">-- Choose Name --</option>
+                <optgroup label="TPA List">
+                    <option>ADITYA BIRLA GENERAL INSURANCE</option><option>FUTURE GENERALI INDIA INSURANCE CO. LTD</option><option> SBI GENERAL INSURANCE</option><option>MEDIASSIST TPA</option><option>GENINS INDIA TPA</option><option>UNIVERSAL SAMPO GENERAL INSURANCE</option><option>IFFCO TOKIO GENERAL INSURANCE</option><option>STAR HEALTH INSURANCE</option><option>CSEB - VIDAL HEALTH INSURANCE TPA</option><option>HERITAGE TPA</option><option>Health Assist Insurance TPA PVT. LTD</option><option>HEALTH INDIA TPA</option><option>BAJAJ ALLIANZ</option><option>ICICI LOMBARD</option><option>TATA AIG</option><option>RELIANCE GENERAL INSURANCE</option><option>VIDAL HEALTH INSURANCE TPA PVT LTD</option><option>MD INDIA TPA</option><option>GO DIGIT GENERAL INSURANCE</option><option>NIVA BUPA</option><option>HITPA</option><option>FAMILY HEALTH PLAN INSURANCE TPA LIMITED</option><option>VOLO HEALTH INSURANCE TPA</option><option>LINK-K INSURANCE TPA PRIVATE LIMITED</option><option>GENERALI CENTRAL INSURANCE CO. LTD</option><option>HDFC ERGO</option><option>AKNA TPA</option><option>CARE HEALTH INSURACE</option><option>ERICSON TPA</option><option>MEDSAVE TPA ( MP POWER )</option><option>PARK MEDICLAIM TPA</option><option>PARAMOUNT TPA</option>
+                </optgroup>
+                
+            </select>
+        </div>
+        <div><label>Insurance Company</label>
+  <select id="insuranceCompany">
+ <option value="">-- Choose Name --</option>
+
+                    <option>ICICI LOMBARD GENERAL INSURANCE CO. LTD</option><option>IFFCO TOKIO GENERAL INSURANCE CO. LTD</option><option>FUTURE GENERALI INDIA INSURANCE CO. LTD</option><option> ALLIANZ GENERAL INSURANCE CO. LTD</option><option>CARE HEALTH INSURANCE LTD</option><option>CSEB-CSPC-CSP-DCL-VIDAL HEALTH TPA</option><option>CSEB-CSPC-CSP-GCL-VIDAL HEALTH TPA</option><option>CSEB-CSPC-CSP-TCL-VIDAL HEALTH TPA</option><option>HDFC ERGO GENERAL INSURANCE CO.LTD</option><option>NATIONAL INSURANCE CO. LTD</option><option>NIVA BUPA HEALTH INSURANCE CO LTD</option><option>THE ORIENTAL INSURANCE COMPANY LIMITED</option><option>THE NEW INDIA ASSURANCE CO. LTD</option><option>STAR HEALTH AND ALLIED INSURANCE CO.LTD</option><option>UNITED INDIA INSURANCE CO LTD</option><option>SBI GENERAL INSURANCE CO. LTD</option><option>TATA AIG GENERAL INSURANCE CO. LTD</option><option>RELIANCE GERENAL INSURANCE</option><option>GENERALI CENTRAL INSURANCE CO.LTD</option><option>ADITYA BIRLA HEALTH INSURANCE</option><option>MANIPAL CIGNA HEALTH INSURANCE COMPANY LIMITED</option><option>GO DIGIT GENERAL INSURANCE COMPANY LIMITED</option><option>MAGMA GENERAL INSURANCE COMPANY LIMITED</option><option>ZURICH KOTAK GENERAL INSURANCE COMPANY (INDIA) LIMITED</option><option>ZUNO GENERAL INSURANCE COMPANY LTD</option><option>MAGMA HDI GENERAL INSURANCE CO LTD</option><option>ROYAL SUNDARAM GENERAL INSURANCE COMPANY LTD</option><option>CHOLAMANDALAM MS GENERAL INSURANCE CO. LTD.</option><option>MADHYA PRADESH POWER GENERATING COMPANY LIMITED</option><option>INDUSIND GENERAL INSURANCE</option>
+                </optgroup>
+</select>
+</div>
+        <div><label>DOA (Admission)</label><input type="date" id="doa"></div>
+        <div><label>DOD (Discharge)</label><input type="date" id="dod"></div>
+        <div><label>Insurance ID No</label><input id="insuranceId" placeholder="Insurance ID No"></div>
+        <div><label>Claim No</label><input id="claimNo" placeholder="Claim No"></div>
+        <div><label>Policy No</label><input id="policyNo" placeholder="Policy No"></div>
+        <div><label>EMP ID No</label><input id="empId" placeholder="EMP ID No"></div>
+        <div><label>Bill Invoice No</label><input id="billInvoiceNo" placeholder="Invoice No"></div>
+        <div><label>Total Bill (₹)</label><input type="number" id="totalBill" oninput="calcDeduction()"></div>
+        <div><label>Approved (₹)</label><input type="number" id="finalApproved" oninput="calcDeduction()"></div>
+        <div><label>Discount (₹)</label><input type="number" id="discount" oninput="calcDeduction()"></div>
+        <div><label>Deduction (₹)</label><input type="number" id="deduction" placeholder="Deduction"></div>
+        <div><label>Patient Pay</label><input type="number" id="patientPay" placeholder="Patient Pay"></div>
+        <div><label>Settlement Amount</label><input type="number" id="settlementAmount" placeholder="Settlement Amount" oninput="calcTDS()"></div>
+        <div><label>TDS Amount</label><input type="number" id="tdsAmount" placeholder="TDS Amount" readonly style="background:#eee"></div>
+        <div><label>Payment Date</label><input type="date" id="paymentDate"></div>
+        <div><label>UTR No</label><input id="utr" placeholder="UTR No"></div>
+        <div><label>Attender Name</label><input id="contact" placeholder="Name"></div>
+        <div><label>Relation</label>
+            <select id="relation">
+                <option value="">-- Select Relation --</option>
+                <option>Self</option>
+                <option>wife</option>
+                <option>Daughter</option>
+                <option>Husband</option>
+                <option>Son</option>
+                <option>Father</option>
+                <option>Mother</option>
+                <option>Grand son</option>
+                <option>Grandparent</option>
+                <option>Grandchild</option>
+                <option>Uncle/Aunt</option>
+                <option>Nephew/Niece</option>
+                <option>Brother in Law</option>
+                <option>sister in law</option>
+                <option>Brother</option>
+                <option>sister</option>
+                <option>Other</option>
+            </select>
+        </div>
+        <div><label>Insurance Address</label><input id="insuranceAddress" placeholder="Insurance Address" readonly style="background:#f0f0f0; cursor:not-allowed;"></div>
+        <div><label>Bank Name</label><input id="bankName" placeholder="Bank Name" readonly style="background:#f0f0f0; cursor:not-allowed;"></div>
+        <div><label>Bank Account Number</label><input id="bankAccountNo" placeholder="Account Number" readonly style="background:#f0f0f0; cursor:not-allowed;"></div>
+        <div><label>IFSC Code</label><input id="ifscCode" placeholder="IFSC Code" readonly style="background:#f0f0f0; cursor:not-allowed;"></div>
+        <div style="display: none;"><label>Bank Address</label><input id="bankAddress" placeholder="Bank Address" readonly style="background:#f0f0f0; cursor:not-allowed;"></div>
+        <div><label>Courier Details</label><input id="courierDetails" placeholder="Courier Details"></div>
+        <div><label>Courier Date</label><input type="date" id="courierDate"></div>
+        <div style="grid-column: span 2;"><label>Surgery Name</label><input id="surgeryName" placeholder="Surgery Name" onkeyup="render()" style="width:100%; padding: 10px; box-sizing: border-box;"></div>
+        <div style="grid-column: span 2;"><label>Remark</label><input id="remark" placeholder="Remark" onkeyup="render()" style="width:100%; padding: 10px; box-sizing: border-box;"></div>
+        <div><label>Status</label>
+            <select id="status">
+                <option value="Admitted">Admitted</option>
+                <option value="Initial Approved">Initial Approved</option>
+                <option value="Discharge">Discharge</option>
+                <option value="Discharge Approved">Discharge Approved</option>
+                <option value="Pending">Pending</option>
+                <option value="Settled">Settled</option>
+                <option value="Denial">Denial</option>
+            </select>
+        </div>
+        <div><label>Payment Status</label>
+            <select id="paymentStatus">
+                <option value="Unpaid">Unpaid</option>
+                <option value="Paid">Paid</option>
+            </select>
+        </div>
+        <div style="display:flex; align-items:flex-end;">
+            <button id="addBtn" onclick="addPatientWithFolderCreation()">ADD</button>
+            <button onclick="clearForm()">CLEAR</button>
+            <button id="updateBtn" class="btn-update" onclick="updatePatientWithFolderCreation()">Update</button>
+            <button onclick="toggleInvoiceSection()" style="background:#ff6f00; margin-left: auto;">Invoice</button>
+            <button onclick="openSpreadsheet()" style="background:#ff6f00;">Email</button>
+        </div>
+    </div>
+</div>
+
+<!-- GST Invoice Section -->
+<div id="invoiceSection" class="invoice-section">
+    <h3>Invoice Making </h3>
+    <div style="margin-bottom:10px; display:flex; flex-wrap:wrap; gap:10px; align-items:flex-start;">
+        <button type="button" onclick="addInvoiceRow()" style="background:#28a745; color:#fff; font-weight:bold; margin-right:8px;">Add Row</button>
+        <button type="button" onclick="removeInvoiceRow()" style="background:#dc3545; color:#fff; font-weight:bold;">Remove Row</button>
+    </div>
+    <div id="invoiceTotalsBox" style="display:flex; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
+        <div style="background:#fff; padding:10px 14px; border:1px solid #ddd; border-radius:8px; min-width:180px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+            <div style="font-size:9px; color:#555; margin-bottom:6px;">Total Amount Column</div>
+            <div id="invoiceAmountSum" style="font-size:14px; font-weight:bold;">0.00</div>
+        </div>
+        <div style="background:#fff; padding:10px 14px; border:1px solid #ddd; border-radius:8px; min-width:180px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+            <div style="font-size:9px; color:#555; margin-bottom:6px;">Total GST Amount</div>
+            <div id="invoiceGstSum" style="font-size:14px; font-weight:bold;">0.00</div>
+        </div>
+        <div style="background:#fff; padding:10px 14px; border:1px solid #ddd; border-radius:8px; min-width:220px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+            <div style="font-size:9px; color:#555; margin-bottom:6px;">Invoice Total (incl. GST)</div>
+            <div id="invoiceGrandTotalSum" style="font-size:14px; font-weight:bold;">0.00</div>
+        </div>
+    </div>
+    <table class="invoice-table">
+        <tr class="header-row">
+            <th width="0.3%">Sl No.</th>
+            <th width="0.2%">GST Rate</th>
+            <th width="0.2%">MRP/ Marginal</th>
+            <th width="0.1%">Quantity</th>
+            <th width="0.1%">Rate</th>
+            <th width="0.1%">Amount</th>
+        </tr>
+        <tbody id="invoiceRows">
+        </tbody>
+        <tr class="empty-row"><td></td><td></td><td></td><td></td><td></td><td class="right">0.00</td></tr>
+        <!-- Totals Section -->
+        <tr>
+            <td colspan="5" class="right"><strong>CGST</strong></td>
+            <td class="right" id="cgst">0.00</td>
+        </tr>
+        <tr>
+            <td colspan="5" class="right"><strong>SGST</strong></td>
+            <td class="right" id="sgst">0.00</td>
+        </tr>
+        <tr>
+            <td colspan="5" class="right"><strong>(CGST + SGST = Total GST Amount)</strong></td>
+            <td class="right" id="totalGst">0.00</td>
+        </tr>
+        <tr class="total-section">
+            <td colspan="3" class="right">Total</td>
+            <td></td>
+            <td class="right"><span id="totalAmount" style="transition: font-size 0.3s;">0.00</span></td>
+        </tr>
+        <tr>
+            <td colspan="6" class="left">
+                Amount Of GST (in words): <strong id="gstAmountWords">Zero Rupees Only</strong><br><br>
+                Amount Chargeable (in words): <br>
+                <strong id="amountWords">Zero Rupees Only</strong><br><br>
+                <div style="text-align: right; width: 100%;">E. & O.E</div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div class="filters">
+    <input id="search" placeholder="Search by Patient Details/UHID/Mobile/Insurance ID/Claim No/Policy No/EMP ID/Total Bill/Approved/TDS/UTR/Attender Name..." onkeyup="render()" style="flex: 1; padding:10px;">
+    <select id="filterStatus" onchange="render()" style="width: 200px;">
+        <option value="">All Status</option>
+        <option value="Admitted">Admitted</option>
+        <option value="Initial Approved">Initial Approved</option>
+        <option value="Discharge">Discharge</option>
+        <option value="Discharge Approved">Discharge Approved</option>
+        <option value="Pending">Pending</option>
+        <option value="Settled">Settled</option>
+        <option value="Denial">Denial</option>
+    </select>
+    <input type="date" id="filterDoaFrom" onchange="render()" title="Filter DOA from" style="width: 170px;">
+    <input type="date" id="filterDoaTo" onchange="render()" title="Filter DOA to" style="width: 170px;">
+    <label style="display: flex; align-items: center; gap: 5px; font-size: 10px; white-space: nowrap;">
+        <input type="checkbox" id="showHospitalHeader" checked> Header
+    </label>
+    <button id="toggleAutoSyncBtn" onclick="toggleAutoSync()" class="auto-sync-btn" style="background:#20c997; color:white;">Auto Sync: OFF</button>
+    <input type="file" id="importFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="importData(event)">
+    <button onclick="document.getElementById('importFile').click()" style="background:#17a2b8; width: auto; padding-left:20px; padding-right:20px;">Import Data</button>
+    <button onclick="exportExcel()" style="background:#28a745; width: auto; padding-left:20px; padding-right:20px;">Export Excel Report</button>
+    <button onclick="generateExportLetter()" style="background:#6f42c1; width: auto; padding-left:20px; padding-right:20px;">Generate Export Letter</button>
+    <button onclick="deleteSelected()" style="background:#dc3545; width: auto; padding-left:20px; padding-right:20px;">Delete Selected</button>
+    <button onclick="sendWhatsAppForSelectedDischargeApproved()" style="background:#25D366; width: auto; padding-left:20px; padding-right:20px;">Send WhatsApp Message</button>
+    <button id="syncBtn" onclick="syncToGoogleSheet()" style="background:#4285F4; width: auto; padding-left:20px; padding-right:20px;">Sync to Google Sheets</button>
+</div>
+
+<div style="overflow-x: auto;">
+    <table id="patientTable">
+        <thead>
+            <tr>
+                <th style="width:30px; min-width:30px; display:flex; align-items:center; justify-content:center; gap:4px; white-space: nowrap; padding:4px;">
+                    <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this.checked)">
+                    <label for="selectAllCheckbox" style="font-size:18px; margin:0;"></label>
+                </th>
+                <th style="width:20px; min-width:20px; text-align:center;">Action</th>
+                <th style="width:20px; min-width:20px; text-align:center;">S.No</th>
+                <th>Patient Details</th>
+                <th>UHID</th>
+                <th>Mobile Number</th>
+                <th>Insurance Limit</th>
+                <th>IPD No</th>
+                <th>DOA</th>
+                <th>DOD</th>
+                <th>TPA/Ins. Name</th>
+                <th>Insurance Company</th>
+                <th>Insurance ID No</th>
+                <th>Claim No</th>
+                <th>Policy No</th>
+                <th>EMP ID No</th>
+                <th>Bill Invoice No</th>
+                <th>Total Bill</th>
+                <th>Approved</th>
+                <th>Discount</th>
+                <th>Deduction</th>
+                <th>Patient Pay</th>
+                <th>Settlement Amount</th>
+                <th>TDS Amount</th>
+                <th>Payment/UTR</th>
+                <th>Attender Name</th>
+                <th>Relation</th>
+                <th>Insurance Address</th>
+                <th>Bank Name</th>
+                <th>Bank Account No.</th>
+                <th>IFSC Code</th>
+                <th>Bank Address</th>
+                <th>Courier Details</th>
+                <th>Courier Date</th>
+                <th>Diagnosis</th>
+                <th>Surgery Name</th>
+                <th>Remark</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+    </table>
+</div>
+
+<script>
+let patients = JSON.parse(localStorage.getItem("patients")) || [];
+let editIndex = -1;
+let nextPatientId = Number(localStorage.getItem("nextPatientId")) || 1;
+let selectedPatientIds = new Set();
+
+const fieldIds = ["name", "uhid", "mobile", "insuranceLimit", "ipdNo", "diagnosis", "tpa", "insuranceCompany", "doa", "dod", "insuranceId", "claimNo", "policyNo", "empId", "billInvoiceNo", "totalBill", "finalApproved", "discount", "deduction", "patientPay", "settlementAmount", "tdsAmount", "paymentDate", "utr", "contact", "relation", "insuranceAddress", "bankName", "bankAccountNo", "ifscCode", "bankAddress", "courierDetails", "courierDate", "surgeryName", "remark", "status", "paymentStatus"];
+
+const makeEntries = (keys, details) => keys.reduce((acc, key) => (acc[key] = details, acc), {});
+const tpaBankDetails = {
+    ...makeEntries([
+        "ADITYA BIRLA GENERAL INSURANCE",
+        "SBI GENERAL INSURANCE",
+        "MEDIASSIST TPA",
+        "GENINS INDIA TPA",
+        "IFFCO TOKIO GENERAL INSURANCE",
+        "STAR HEALTH INSURANCE",
+        "HERITAGE TPA",
+        "HEALTH INDIA TPA",
+        "BAJAJ ALLIANZ",
+        "ICICI LOMBARD",
+        "RELIANCE GENERAL INSURANCE",
+        "GO DIGIT GENERAL INSURANCE",
+        "HDFC ERGO"
+    ], { bankName: "HDFC BANK", bankAccountNo: "50200059120370", ifscCode: "HDFC0000771", bankAddress: "LINK ROAD BILASPUR" }),
+    ...makeEntries([
+        "UNIVERSAL SAMPO GENERAL INSURANCE",
+        "Health Assist Insurance TPA PVT. LTD",
+        "TATA AIG",
+        "NIVA BUPA",
+        "CARE HEALTH INSURACE"
+    ], { bankName: "UNION BANK", bankAccountNo: "619701010050404", ifscCode: "UBIN0561975", bankAddress: "VYPAR VIHAR BILASPUR" }),
+    ...makeEntries([
+        "CSEB - VIDAL HEALTH INSURANCE TPA",
+        "VIDAL HEALTH INSURANCE TPA PVT LTD",
+        "MD INDIA TPA",
+        "HITPA",
+        "FAMILY HEALTH PLAN INSURANCE TPA LIMITED",
+        "VOLO HEALTH INSURANCE TPA",
+        "LINK-K INSURANCE TPA PRIVATE LIMITED",
+        "GENERALI CENTRAL INSURANCE CO. LTD",
+        "AKNA TPA",
+        "ERICSON TPA",
+        "MEDSAVE TPA ( MP POWER )",
+        "PARK MEDICLAIM TPA",
+        "PARAMOUNT TPA"
+    ], { bankName: "AXIS BANK", bankAccountNo: "923020008483463", ifscCode: "UTIB0000164", bankAddress: "RAMA TRADE, OLD BUS STAND BILASPUR" })
+};
+
+const tpaInsuranceAddresses = {
+    "ADITYA BIRLA GENERAL INSURANCE": "ADITYA BIRLA GENERAL INSURANCE 9th Floor, Tower 1, One Indiabulls Centre, Jupiter Mills Compound, 841, Senapati Bapat Marg, Elphinstone Road, Mumbai 400013",
+    "SBI GENERAL INSURANCE": "Health Insurance Vertical SBI General Insurance Company Limited 9th Floor, Westport, Pan Card Club Road, Baner, Pune, Maharashtra - 411 045",
+    "MEDIASSIST TPA": "Medi Assist Insurance TPA Pvt. Ltd Cashless Processing Centre#58/1A, Singasandra, Hosur Main Road, Begur Post, Bangalore. PIN - 560068. Helpline: 080-22068666",
+    "GENINS INDIA TPA": "Genins India Insurance TPA Ltd. Flat No SF-3, Second Floor, Tulsi Vihar, Opp. Tanjore Restaurant, Abhyankar Nagar, Nagpur, Maharashtra 440010 Phone No. 0712-2225029.",
+    "UNIVERSAL SAMPO GENERAL INSURANCE": "Universal Sompo General Insurance Co. Ltd. Health Claims Department, 1st Floor, Plot No. C-56 A/13, C Block, Sector - 62, Noida, Uttar Pradesh - 201309",
+    "IFFCO TOKIO GENERAL INSURANCE": "IFFCO TOKIO GENERAL INSURANCE IFFCO Tower II, Plot No.3, 5th Floor, Sector 29, Gurgaon-122001 (Haryana)",
+    "STAR HEALTH INSURANCE": "STAR HEALTH & ALLIED INSURANCE CO. LTD CLAIM DEPARTMENT, LAL GANGA SHOPPING MALL 2ND FLOOR SHOP NO 06 TO 10 G.E. ROAD, RAIPUR (492001) PH.NO:- 0771-4017396",
+    "CSEB - VIDAL HEALTH INSURANCE TPA": "CSEB - VIDAL HEALTH INSURANCE Vidal Health-CSPC Helpdesk for Cashless, CSEB Campus, Dangania, Raipur, Chhattisgarh-493013 Pho.No:- 0771-2574019",
+    "HERITAGE TPA": "Heritage Health Insurance TPA Nicco House, 5th Floor, 2, Hare Street KOLKATA, West Bengal, Pin: 700001 Phone: (033) 2248 6430; Fax: (033) 2231 0287",
+    "Health Assist Insurance TPA PVT. LTD": "Health Assist Insurance TPA PVT 815, Vishwa Sadan, District Centre, Janak Puri, New Delhi - 110058",
+    "HEALTH INDIA TPA": "Health India Insurance TPA Services Pvt. Ltd., Neelkanth Corporate IT Park, 4th floor, 406-412, Kirol Road, Vidhyavihar (W), Mumbai-400086",
+    "BAJAJ ALLIANZ": "Bajaj Allianz Insurance Company, Health Administration Team, 2nd Floor, Bajaj Finserv Building, Survey No. 208 / B - 1, Behind Weikfield IT Park, Off Nagar Road, Viman Nagar, Pune-411 014",
+    "ICICI LOMBARD": "Lombard GIC, ICICI Lombard Healthcare, 01st, 04th, 05th & 06th floor, Varun Towers II, Opp Hyderabad Public School, Begumpet, Hyderabad, Telangana, 500016.",
+    "TATA AIG": "Tata AIG Health Claims Hub Door No. 615, 616, 5th and 6th Floors, Imperial Towers, Ameerpet, Next to Ameerpet Metro Station, Hyderabad, Telangana - 500016",
+    "RELIANCE GENERAL INSURANCE": "Reliance General Insurance, RCareHealth, No.1-89/3/B/40to42/KS/301, 3rd floor, Krishe Block, Krishe Sapphire, Madhapur, Hyderabad-Telangana-500081",
+    "VIDAL HEALTH INSURANCE TPA PVT LTD": "Vidal Health Insurance TPA Pvt. Ltd, 306, 3RD FLOOR SHREEVARDHAN COMPLEX, 4-RNT MARG, INDORE, MADHYA PRADESH, 452001",
+    "MD INDIA TPA": "MDIndia Health Insurance Pvt. Ltd Head Office: S.NO.46/1, E-Space, A2 Building, 3rd Floor, Pune Nagar Rd., Vadgaonsheri, Pune - 411014 (India)",
+    "GO DIGIT GENERAL INSURANCE": "Go Digit General Insurance Limited Atlantis, 95, 4th B Cross Road, Koramangala Industrial Layout, 5th Block, Bengaluru 560095",
+    "NIVA BUPA": "Niva Bupa Health Insurance Company Limited, C-98, First Floor, Lajpat Nagar 1, New Delhi-110024,",
+    "HITPA": "Health Insurance TPA of India Ltd, 2nd Floor, Majestic Omnia Building, A-110, Sector 4 Noida, Uttar Pradesh - 201301",
+    "FAMILY HEALTH PLAN INSURANCE TPA LIMITED": "Family Health Plan Insurance TPA Ltd, Srinilaya - Cyber Spazio, Second Floor, Road No.2, Banjara Hills, Hyderabad-500 034.",
+    "VOLO HEALTH INSURANCE TPA": "Volo Health Insurance TPA Pvt Ltd 2nd Floor, J.P House Plot No. 172, Lane 2, Westend Marg Saket Metro Station, New Delhi- 110003",
+    "LINK-K INSURANCE TPA PRIVATE LIMITED": "Link - k Insurance TPA Pvt. Ltd West Woods Building, Old No. Y-205, New No. 32, 3rd Floor, 5th Ave, Anna Nagar West, Chennai, Tamil Nadu 600040., Chennai- 600040",
+    "GENERALI CENTRAL INSURANCE CO. LTD": "Generali Central Insurance Company Limited Future Generali health. Office No. 3, 3rd Floor.",
+    "HDFC ERGO": "HDFC ERGO General Insurance Company Limited Registered & Corporate Office: 1st Floor, HDFC House, 165/166 Backbay Reclamation, H.T.Parekh Marg, Churchgate, Mumbai - 400 020",
+    "AKNA TPA": "",
+    "CARE HEALTH INSURACE": "Care Health Insurance Limited, 3rd Floor, Vipul Tech Square, Tower C, Golf Course Road, Sector - 43, Gurgaon - 122009 (HARYANA)",
+    "ERICSON TPA": "Ericson Insurance TPA Pvt. Ltd. 11-C, Corporate Park, S. T. Road, Chembur, Mumbai - 400071. Maharashtra. Tel : 022-25280280",
+    "MEDSAVE TPA ( MP POWER )": "MedSave Health Insurance TPA Limited Plot No. 195A, 3rd Floor, Opposite D.B. City Mall, M.P Nagar, Zone-I, Bhopal.",
+    "PARK MEDICLAIM TPA": "",
+    "PARAMOUNT TPA": "PARAMOUNT TPA LTD Plot No. A-442, Road No-28, M.I.D.C Industrial Area, Wagle Estate, Ram Nagar, Vitthal Rukhumani Mandir, Thane-400604"
+};
+
+function populateBankDetailsFromTpa() {
+    const { bankName = "", bankAccountNo = "", ifscCode = "", bankAddress = "" } = tpaBankDetails[document.getElementById("tpa").value] || {};
+    document.getElementById("bankName").value = bankName;
+    document.getElementById("bankAccountNo").value = bankAccountNo;
+    document.getElementById("ifscCode").value = ifscCode;
+    document.getElementById("bankAddress").value = bankAddress;
+    document.getElementById("insuranceAddress").value = tpaInsuranceAddresses[document.getElementById("tpa").value] || document.getElementById("insuranceAddress").value || "";
+}
+
+document.getElementById("tpa").addEventListener("change", populateBankDetailsFromTpa);
+document.getElementById("insuranceCompany").addEventListener("change", function() {
+    document.getElementById("insuranceAddress").value = tpaInsuranceAddresses[this.value] || document.getElementById("insuranceAddress").value || "";
+});
+
+function ensurePatientId(patient) {
+    if (!patient.id) patient.id = nextPatientId++;
+}
+
+patients.forEach(ensurePatientId);
+save();
+render();
+
+function save(){
+    localStorage.setItem("patients", JSON.stringify(patients));
+    localStorage.setItem("nextPatientId", String(nextPatientId));
+}
+
+// FOR AUO COUNT AND TOTALS IN DASHBOARD
+function updateDashboardTotals() {
+    let totalBillAll = 0;
+    let totalApprovedAll = 0;
+    let totalDiscountAll = 0;
+    let totalDeductionAll = 0;
+    let totalPatientPayAll = 0;
+    let totalSettlementAmountAll = 0;
+    let totalDenials = 0;
+    let totalDischargeApproved = 0;
+    let totalInitialApproved = 0;
+    let totalAdmitted = 0;
+    let totalDischarge = 0;
+    let totalPending = 0;
+    let totalTotalpatienyts = 0;
+    let totalPatients = patients.length;
+
+    patients.forEach(p => {
+        totalBillAll += parseFloat(p.totalBill || 0);
+        totalApprovedAll += parseFloat(p.finalApproved || 0);
+        totalDiscountAll += parseFloat(p.discount || 0);
+        totalDeductionAll += parseFloat(p.deduction || 0);
+        totalPatientPayAll += parseFloat(p.patientPay || 0);
+        totalSettlementAmountAll += parseFloat(p.settlementAmount || 0);
+        const status = String(p.status).trim();
+        if (status === "Denial") totalDenials++;
+        if (status === "Discharge Approved") totalDischargeApproved++;
+        if (status === "Initial Approved") totalInitialApproved++;
+        if (status === "Admitted") totalAdmitted++;
+        if (status === "Discharge") totalDischarge++;
+        if (status === "Pending") totalPending++;
+        if (status) totalTotalpatienyts++;
+    });
+
+    document.getElementById("totalBillSum").innerText = totalBillAll.toLocaleString('en-IN');
+    document.getElementById("totalApprovedSum").innerText = totalApprovedAll.toLocaleString('en-IN');
+    document.getElementById("totalDiscountSum").innerText = totalDiscountAll.toLocaleString('en-IN');
+    document.getElementById("totalDeductionSum").innerText = totalDeductionAll.toLocaleString('en-IN');
+    document.getElementById("totalPatientPaySum").innerText = totalPatientPayAll.toLocaleString('en-IN');
+    document.getElementById("totalSettlementAmountSum").innerText = totalSettlementAmountAll.toLocaleString('en-IN');
+    document.getElementById("totalDenialCount").innerText = totalDenials;
+    document.getElementById("totalDischargeApprovedCount").innerText = totalDischargeApproved;
+    document.getElementById("totalInitialApprovedCount").innerText = totalInitialApproved;
+    document.getElementById("totalAdmittedCount").innerText = totalAdmitted;
+    document.getElementById("totalDischargeCount").innerText = totalDischarge;
+    document.getElementById("totalPendingCount").innerText = totalPending;
+    document.getElementById("totalPatientsCount").innerText = totalPatients;
+    const statusCountEl = document.getElementById("totalPatientsWithStatusCount");
+    if (statusCountEl) {
+        statusCountEl.innerText = totalTotalpatienyts;
+    }
+}
+
+function buildPatientFromForm() {
+    let obj = {};
+    fieldIds.forEach(id => {
+        const element = document.getElementById(id);
+        obj[id] = element ? element.value : "";
+    });
+    return obj;
+}
+
+function findExistingPatient(uhid) {
+    if (!uhid) return null;
+    const normalizedUhid = uhid.trim().toLowerCase();
+    return patients.find(p => {
+        const pUhid = (p.uhid || '').trim().toLowerCase();
+        return pUhid === normalizedUhid;
+    });
+}
+
+// Populate form with existing patient data for re-admission
+// Excludes: IP Number (ipdNo), Admission Date (doa), Discharge Date (dod), Diagnosis, Bill amounts, Payment details, Courier details
+function populateFormForReAdmit(existingPatient) {
+    console.log("[DEBUG] Populating form for re-admission from:", existingPatient);
+    
+    // Fields that should NOT be auto-populated for re-admission
+    const fieldsToSkip = [
+        'ipdNo',           // IP Number
+        'doa',             // Admission Date
+        'dod',             // Discharge Date
+        'diagnosis',       // Diagnosis
+        'totalBill',       // Total Bill
+        'finalApproved',   // Approved Amount
+        'discount',        // Discount
+        'deduction',       // Deduction
+        'patientPay',      // Patient Pay
+        'settlementAmount', // Settlement Amount
+        'tdsAmount',       // TDS Amount
+        'utr',             // Payment/UTR
+        'courierDetails',  // Courier Details
+        'courierDate',      // Courier Date
+        'surgeryName',      // Surgery Name
+        'remark'            // Remark
+    ];
+    
+    fieldIds.forEach(id => {
+        const element = document.getElementById(id);
+        if (!element) return;
+        
+        // Skip fields in the exclusion list
+        if (fieldsToSkip.includes(id)) {
+            element.value = '';
+            return;
+        }
+        
+        // Populate all other fields from existing patient data
+        element.value = existingPatient[id] || '';
+    });
+    
+    // Always set Status to "Admitted" for re-admission
+    const statusElement = document.getElementById("status");
+    if (statusElement) {
+        statusElement.value = "Admitted";
+        console.log("[DEBUG] Set Status to: Admitted");
+    }
+    
+    console.log("[DEBUG] Form populated. Financial, Diagnosis, Courier, Dates, and IPD fields left empty for user input");
+}
+
+function addPatient(){
+    const uhidValue = document.getElementById("uhid").value.trim();
+    if(!uhidValue) return alert("UHID required");
+    const existing = findExistingPatient(uhidValue);
+    let obj = buildPatientFromForm();
+    if (existing) {
+        const reAdmit = confirm("This patient is already in the system. Would you like to re-admit them?");
+        if (!reAdmit) return;
+        // Populate form with existing data for re-admission (excludes ipdNo and doa)
+        populateFormForReAdmit(existing);
+        // Rebuild object after populating form
+        obj = buildPatientFromForm();
+        delete obj.id;
+    }
+    ensurePatientId(obj);
+    patients.push(obj);
+    clearForm(); save(); render();
+}
+
+function calcDeduction() {
+    const bill = parseFloat(document.getElementById("totalBill").value) || 0;
+    const app = parseFloat(document.getElementById("finalApproved").value) || 0;
+    const discount = parseFloat(document.getElementById("discount").value) || 0;
+
+    // Patient Pay = Total Bill - Approved - Discount
+    const patientPay = bill - app - discount;
+    document.getElementById("patientPay").value = patientPay.toFixed(2);
+}
+
+function calcTDS() {
+    const settlement = parseFloat(document.getElementById("settlementAmount").value) || 0;
+    document.getElementById("tdsAmount").value = (settlement * 0.10).toFixed(2);
+}
+
+function editPatient(i){
+    let p = patients[i]; editIndex = i;
+    fieldIds.forEach(id => document.getElementById(id).value = p[id] || "");
+    document.getElementById("addBtn").style.display = "none";
+    document.getElementById("updateBtn").style.display = "inline-block";
+    window.scrollTo(0,0);
+}
+
+function updatePatient(){
+    fieldIds.forEach(id => patients[editIndex][id] = document.getElementById(id).value);
+    editIndex = -1;
+    document.getElementById("addBtn").style.display = "inline-block";
+    document.getElementById("updateBtn").style.display = "none";
+    clearForm(); save(); render();
+}
+
+function deletePatient(i){
+    if(confirm("Delete record?")){
+        const id = patients[i].id;
+        patients.splice(i,1);
+        selectedPatientIds.delete(id);
+        save(); render();
+    }
+}
+
+function clearForm(){
+    fieldIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (el.tagName === "SELECT") el.selectedIndex = 0;
+        else el.value = "";
+    });
+}
+
+function toggleSelection(id, checked) {
+    if (checked) selectedPatientIds.add(id);
+    else selectedPatientIds.delete(id);
+    const selectAllCheckbox = document.getElementById("selectAllCheckbox");
+    if (selectAllCheckbox) selectAllCheckbox.indeterminate = true;
+}
+
+function toggleSelectAll(checked) {
+    const rows = document.querySelectorAll('#tbody input[type="checkbox"][data-patient-id]');
+    rows.forEach(input => {
+        input.checked = checked;
+        const id = Number(input.dataset.patientId);
+        if (checked) selectedPatientIds.add(id);
+        else selectedPatientIds.delete(id);
+    });
+}
+
+function deleteSelected() {
+    if (!selectedPatientIds.size) return alert("No records selected.");
+    if (!confirm(`Delete ${selectedPatientIds.size} selected record(s)?`)) return;
+    patients = patients.filter(p => !selectedPatientIds.has(p.id));
+    selectedPatientIds.clear();
+    save(); render();
+}
+
+function showTpaSummary(selectId, statsId) {
+    const selected = document.getElementById(selectId).value;
+    const statsDiv = document.getElementById(statsId);
+    if (!selected) { statsDiv.innerHTML = "<i>Select for data.</i>"; return; }
+    const filtered = patients.filter(p => {
+        if(selectId === 'insSummarySelect') return p.insuranceCompany === selected;
+        return p.tpa === selected;
+    });
+    const bill = filtered.reduce((s, p) => s + parseFloat(p.totalBill || 0), 0);
+    const app = filtered.reduce((s, p) => s + parseFloat(p.finalApproved || 0), 0);
+    const ded = filtered.reduce((s, p) => s + parseFloat(p.deduction || 0), 0);
+    statsDiv.innerHTML = `<strong>Summary:</strong> Billed ₹${bill.toLocaleString('en-IN')} | App ₹${app.toLocaleString('en-IN')} | Ded <span style="color:red">₹${ded.toLocaleString('en-IN')}</span>`;
+}
+
+function showInsuranceSummary(company) {
+    const select = document.getElementById('insSummarySelect');
+    select.value = company;
+    showTpaSummary('insSummarySelect', 'insStats');
+    document.getElementById('insStats').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function getFormattedTodayDate() {
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const year = today.getFullYear();
+    return `${day}-${month}-${year}`;
+}
+
+function getRowLetterDate(row) {
+    // Use the letter generation date rather than a patient date field
+    return getFormattedTodayDate();
+}
+
+function getFilteredPatients() {
+    const s = document.getElementById("search").value.trim().toLowerCase();
+    const fStatus = document.getElementById("filterStatus").value;
+    const filterDoaFrom = document.getElementById("filterDoaFrom").value;
+    const filterDoaTo = document.getElementById("filterDoaTo").value;
+
+    return patients.filter(p => {
+        const statusMatch = fStatus === "" || p.status === fStatus;
+        const doa = p.doa || "";
+        const doaFromMatch = !filterDoaFrom || (doa && doa >= filterDoaFrom);
+        const doaToMatch = !filterDoaTo || (doa && doa <= filterDoaTo);
+
+        if (!s) {
+            return statusMatch && doaFromMatch && doaToMatch;
+        }
+
+        const searchFields = [
+            p.name,
+            p.uhid,
+            p.mobile,
+            p.insuranceId,
+            p.claimNo,
+            p.policyNo,
+            p.empId,
+            p.totalBill,
+            p.finalApproved,
+            p.tdsAmount,
+            p.utr,
+            p.contact,
+            p.insuranceLimit,
+            p.ipdNo,
+            p.diagnosis,
+            p.billInvoiceNo,
+            p.relation,
+            p.courierDetails,
+            p.surgeryName,
+            p.remark,
+            p.insuranceCompany,
+        ];
+
+        const termMatch = searchFields.some(value => String(value || "").toLowerCase().includes(s));
+
+        return termMatch && statusMatch && doaFromMatch && doaToMatch;
+    });
+}
+
+function render(){
+    const visiblePatients = getFilteredPatients();
+    const tbody = document.getElementById("tbody");
+    tbody.innerHTML = "";
+    let sumBill = 0, sumApp = 0, sumSettled = 0, sumDed = 0, denialCount = 0, serial = 1;
+    const visiblePatientIds = [];
+
+    visiblePatients.forEach((p, i) => {
+        if (p.status === "Denial") denialCount++;
+        sumBill += parseFloat(p.totalBill || 0);
+        sumApp += parseFloat(p.finalApproved || 0);
+        sumDed += parseFloat(p.deduction || 0);
+        sumSettled += parseFloat(p.settlementAmount || 0);
+        const checked = selectedPatientIds.has(p.id) ? 'checked' : '';
+        const whatsappButton = p.status === 'Discharge Approved' && p.mobile ? `<button style="background:#25D366; color:white; margin-left:4px;" onclick="sendWhatsAppByIndex(${patients.indexOf(p)})">WhatsApp</button>` : '';
+        tbody.innerHTML += `<tr><td><input type="checkbox" data-patient-id="${p.id}" ${checked} onchange="toggleSelection(${p.id}, this.checked)"></td><td><button class="btn-edit" onclick="editPatient(${patients.indexOf(p)})">Edit</button><button class="btn-del" onclick="deletePatient(${patients.indexOf(p)})">Del</button>${whatsappButton}</td><td>${serial++}</td><td><b>${p.name}</b><br><small>UHID: ${p.uhid}<br>Mobile: ${p.mobile || '-'}</small></td><td>${p.uhid || '-'}</td><td>${p.mobile || '-'}</td><td>${p.insuranceLimit || '-'}</td><td>${p.ipdNo || '-'}</td><td>${p.doa || '-'}</td><td>${p.dod || '-'}</td><td>${p.tpa || '-'}</td><td>${p.insuranceCompany || '-'}</td><td>${p.insuranceId || '-'}</td><td>${p.claimNo || '-'}</td><td>${p.policyNo || '-'}</td><td>${p.empId || '-'}</td><td>${p.billInvoiceNo || '-'}</td><td>₹${p.totalBill}</td><td style="color:green">₹${p.finalApproved}</td><td>₹${p.discount}</td><td style="color:red">₹${p.deduction}</td><td>₹${p.patientPay || '-'}</td><td>₹${p.settlementAmount || '-'}</td><td>₹${p.tdsAmount || '-'}</td><td><small>${p.paymentDate||'-'}<br>${p.utr||'-'}</small></td><td>${p.contact || '-'}</td><td>${p.relation || '-'}</td><td>${p.insuranceAddress || '-'}</td><td>${p.bankName || '-'}</td><td>${p.bankAccountNo || '-'}</td><td>${p.ifscCode || '-'}</td><td>${p.bankAddress || '-'}</td><td>${p.courierDetails || '-'}</td><td>${p.courierDate || '-'}</td><td>${p.diagnosis || '-'}</td><td>${p.surgeryName || '-'}</td><td>${p.remark || '-'}</td><td onclick="filterByStatus('${String(p.status).replace(/'/g, "\\'").replace(/"/g,'&quot;')}')" style="cursor:pointer; color:#007bff; font-weight:bold;">${p.status || '-'}</td></tr>`;
+        visiblePatientIds.push(p.id);
+    });
+    updateDashboardTotals();
+    const selectAllCheckbox = document.getElementById("selectAllCheckbox");
+    if (selectAllCheckbox) {
+        const visibleCount = visiblePatientIds.length;
+        const selectedCount = visiblePatientIds.filter(id => selectedPatientIds.has(id)).length;
+        selectAllCheckbox.checked = visibleCount > 0 && selectedCount === visibleCount;
+        selectAllCheckbox.indeterminate = selectedCount > 0 && selectedCount < visibleCount;
+    }
+}
+
+function filterByStatus(status) {
+    document.getElementById("filterStatus").value = status;
+    render();
+}
+
+function normalizeMobileNumber(mobile) {
+    if (!mobile) return '';
+    return String(mobile).replace(/[^0-9]/g, '').replace(/^0+/, '');
+}
+
+function buildWhatsAppMessage(patient) {
+    const name = patient.name || '-';
+    const claim = patient.claimNo || '-';
+    const approved = patient.finalApproved ? `₹ ${Number(patient.finalApproved).toFixed(2)}` : '-';
+    const deduction = patient.deduction ? `₹ ${Number(patient.deduction).toFixed(2)}` : '-';
+    const discount = patient.discount ? `₹ ${Number(patient.discount).toFixed(2)}` : '-';
+    const payable = patient.patientPay ? `₹ ${Number(patient.patientPay).toFixed(2)}` : '-';
+    return `Hello Sir/Madam,
+    
+🏥 DISCHARGE & CLAIM APPROVAL NOTIFICATION.
+
+📋 Patient Details:
+
+Patient Name: ${name}
+
+TPA Name: ${patient.tpa || '-'}
+
+Claim No: ${claim}
+
+💰 Insurance Payment Details :
+
+Discharge Approved Amount: ${approved}
+
+Deduction:  ${deduction}
+
+Discount: ${discount}
+
+Amount Payable by Patient: ${payable}
+
+Kindly visit the Billing Department to finalize your settlement
+
+Thank you for choosing our hospital.
+For any queries,
+Mon-Sat 10am-7pm.
+Please contact us.9009446861, 
+
+
+Best regards,
+Hospital Administration - TPA Desk.`;
+}
+
+function openWhatsAppChat(phone, text) {
+    if (!phone) return alert('Patient mobile number is required to send WhatsApp message.');
+    const encodedText = encodeURIComponent(text);
+    const fullNumber = phone.startsWith('91') ? phone : `91${phone}`;
+    const whatsappUrl = `https://web.whatsapp.com/send?phone=${fullNumber}&text=${encodedText}`;
+    window.open(whatsappUrl, '_blank');
+}
+
+function sendWhatsAppByIndex(index) {
+    const patient = patients[index];
+    if (!patient) return alert('Unable to locate patient record.');
+    if (patient.status !== 'Discharge Approved') return alert('This patient is not in Discharge Approved status.');
+    const number = normalizeMobileNumber(patient.mobile);
+    if (!number) return alert('Invalid mobile number for this patient.');
+    const message = buildWhatsAppMessage(patient);
+    openWhatsAppChat(number, message);
+}
+
+function sendWhatsAppForSelectedDischargeApproved() {
+    const selected = patients.filter(p => selectedPatientIds.has(p.id) && p.status === 'Discharge Approved');
+    if (!selected.length) return alert('Select at least one Discharge Approved patient record.');
+    if (selected.length > 1) return alert('Please select only one Discharge Approved patient at a time to send WhatsApp.');
+    const patient = selected[0];
+    const number = normalizeMobileNumber(patient.mobile);
+    if (!number) return alert('Selected patient does not have a valid mobile number.');
+    const message = buildWhatsAppMessage(patient);
+    openWhatsAppChat(number, message);
+}
+
+function generateExportLetter() {
+    const selectedRows = getSelectedPatientDataForLetter();
+    if (!selectedRows.length) return alert('Please select at least one row to generate the cover letter.');
+    const showHeader = document.getElementById('showHospitalHeader').checked;
+    const html = buildCoverLetterDocument(selectedRows, showHeader);
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+}
+
+function handleLetterImageUpload(event, type) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const imageData = e.target.result;
+        if (type === 'logo') {
+            localStorage.setItem('hospitalAppLetterLogo', imageData);
+        } else if (type === 'monogram') {
+            localStorage.setItem('hospitalAppLetterMonogram', imageData);
+        }
+        alert(`${type === 'logo' ? 'Logo' : 'Monogram'} uploaded successfully.`);
+        event.target.value = '';
+    };
+    reader.readAsDataURL(file);
+}
+
+function buildCoverLetterDocument(rows, showHeader = false) {
+    const letters = rows.map((row, index) => buildCoverLetterInstance(row, index, showHeader)).join('\n');
+    return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title></title><style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 12px; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; }
+        .letter-instance { background: white; width: 210mm; height: 297mm; padding: 20mm; margin: auto; border: 1px solid #ccc; box-sizing: border-box; position: relative; box-shadow: 0 0 15px rgba(0,0,0,0.2); overflow: hidden; page-break-after: always; }
+        .hospital-header { border-bottom: 1px solid #1a5c96; padding-bottom: 6px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start; }
+        .hospital-info h2 { margin: 0; color: #1a5c96; font-size: 20px; letter-spacing: 0.8px; font-weight: bold; }
+        .hospital-info p { margin: 0px 0; font-size:05px; text-align: left; color: #555; }
+        .hospital-info { margin-bottom: 0; padding-bottom: 0; }
+        .letter-date { font-weight: bold; solid #000; padding: 1px 2px; font-size: 15px; text-align: right; min-width: 15px; }
+        .ins-header { margin: 8px 0 8px 0; font-size: 08x; line-height: 1.3; white-space: normal; text-align: left; }  
+        .ins-header .ins-name, .ins-header .ins-address { display: block; width: 100%; margin: 0; padding: 0; }
+        .ins-name { font-weight: bold; font-size: 16px; text-transform: uppercase; margin-bottom: 0; }
+        .border-box { border: 1.5px solid #000; padding: 10px; margin: 10px 0 15px 0; font-weight: bold; line-height: 1.5; font-size: 13px; }
+        .claim-box { width: 55%; }
+        .claim-box div { margin: 0; }
+        .section-title { font-weight: bold; text-decoration: underline; display: block; margin-top: 8px; font-size: 12px; }
+        .detail-row { display: flex; gap: 10px; margin-bottom: 2px; }
+        .label { min-width: 150px; }
+        .amount-section { background: #fafafa; border: 1.5px solid #000; padding: 18px; margin: 05px 0; }
+        .rupee-amt { font-size: 22px; font-weight: bold; }
+        .hospital-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+        .hospital-image {
+            max-width: 100px;
+            min-width: 100px;
+        }
+        .hospital-image img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            max-height: 90px;
+        }
+            <!-- HOSPITAL LETTER HEAD -->
+        .hospital-info h2 {
+            margin: 0 0 6px;
+            color: #1a5c96;
+            font-size: 18px;
+            letter-spacing: 0.8px;
+            font-weight: bold;
+        }
+        .hospital-info p {
+            margin: 1px 0;
+            font-size:10px;
+            color: #555;
+        }
+        .footer-sign { position: absolute; bottom: 25mm; left: 20mm; right: 20mm; display: flex; justify-content: space-between; align-items: flex-end; }
+        .sign-block { text-align: center; border-top: 1px solid #000; width: 220px; padding-top: 8px; font-size: 15px; }
+        .stamp-circle { border: 1.5px dashed #000; border-radius: 50%; width: 90px; height: 90px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 10px; }
+        @media print { @page { size:letter; margin: 0; } body { padding: 0; background: none; } .letter-instance { border: none; margin: 0; box-shadow: none; width: 210mm; height: 297mm; page-break-after: always; } }
+    </style></head><body>${letters}</body></html>`;
+}
+
+function buildCoverLetterInstance(row, index, showHeader = true) {
+    const bankBranch = row.bankName ? `${row.bankName}${row.bankAddress ? ' - ' + row.bankAddress : ''}` : '';
+    const approvedAmount = parseFloat(row.finalApproved || row.settlementAmount || 0) || 0;
+    const approvedAmountText = approvedAmount.toFixed(2);
+    const amountInWords = numToIndianWords(approvedAmount) || 'Zero';
+    const patientPay = parseFloat(row.patientPay || 0) || 0;
+    const patientPayText = patientPay.toFixed(2);
+    const patientPayWords = numToIndianWords(patientPay) || 'Zero';
+    const fallbackImage = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+    const monogramSrc = localStorage.getItem('hospitalAppLetterMonogram') || fallbackImage;
+    const logoSrc = localStorage.getItem('hospitalAppLetterLogo') || fallbackImage;
+    const hospitalInfoContent = showHeader ? `
+                    <p>Near Sbi Commerical Bank Branch,Vyapar Vihar, Bilaspur, Chhattisgarh - 495001</p>
+                    <p>Phone: 07752-446322, 9993392320 | Email: elitemedcityhospitals@gmail.com</p>` : '';
+    const hospitalHeaderHtml = `
+            <div class="hospital-header">
+                <div class="hospital-image hospital-image-left"><!-- hospital logo -->
+                    <a href="https://imgbb.com/"><img src="https://i.ibb.co/HD6X4CBx/mono.png" alt="mono" border="0"></a>
+                </div>
+                <div class="hospital-info">
+                    <h2>Arpa Medcity Hospital & Research Institute</h2>
+                    ${hospitalInfoContent}
+                </div>
+                <div class="hospital-image hospital-image-right"><!-- hospital NABH LOGO -->
+                    <a href="https://ibb.co/8DcBDXBC"><img src="https://i.ibb.co/MD6hD9hv/logo.png" alt="logo" border="0"></a>
+                </div>
+            </div>`;
+    return `
+        <div class="letter-instance">
+            ${hospitalHeaderHtml}
+            <div class="letter-date">Date: ${escapeHtml(getRowLetterDate(row))}</div>
+            <div class="ins-header">
+                To,<br>
+                <span class="ins-name">${escapeHtml(row.insuranceCompany || row.tpa || '')}</span>
+                <div class="ins-address">${escapeHtml(row.insuranceAddress || '')}</div>
+            </div>
+            <div class="border-box claim-box">
+                <div>CLAIM NO: ${escapeHtml(row.claimNo || '')}</div>
+                <div>MEMBER ID: ${escapeHtml(row.insuranceId || '')}</div>
+                <div>POLICY NO: ${escapeHtml(row.policyNo || '')}</div>
+                <div>EMP_ID: ${escapeHtml(row.empId || '')}</div>
+            </div>
+            Dear Sir,
+            This is to bring to your kind attention that we have enclosed a claim document/s of your member who have availed cashless treatment based on your approval.</p>
+            <span class="section-title">PATIENT DETAILS</span>
+            <div class="border-box">
+                <div class="detail-row"><span class="label">Patient Name:</span> ${escapeHtml(row.name || '')}</div>
+                <div class="detail-row"><span class="label">IP ID:</span> ${escapeHtml(row.ipdNo || '')}</div>
+                <div class="detail-row"><span class="label">Billing Number:</span> ${escapeHtml(row.billInvoiceNo || '')}</div>
+                <div class="detail-row"><span class="label">Date of Admission:</span> ${escapeHtml(formatDate(row.doa))}</div>
+                <div class="detail-row"><span class="label">Date of Discharge:</span> ${escapeHtml(formatDate(row.dod))}</div>
+            </div>
+            <div class="amount-section">
+                 <strong>TOTAL DUE AMOUNT FOR PAYMENT :</strong> <span class="rupee-amt">₹ ${approvedAmountText}</span>
+                <div style="font-style: italic; margin-top: 0px; font-weight: normal; font-size: 13px;">Rupees ${escapeHtml(amountInWords)} Only</div>
+                <div style="margin-top: 0px; font-size: 15px; color: #1a5c96;">
+                    <div> AMOUNT PAID BY PATIENT <span>₹ ${patientPayText}</div>
+                    <div style="font-style: italic; font-weight: normal; font-size: 08px;">Rupees ${escapeHtml(patientPayWords)} Only</div>
+                </div>
+            </div>
+            Kindly send us payment for an amount in favour of "Arpa Medcity Hospital & Research Institute" payable at Bilaspur.</p>
+            <span class="section-title">BANK DISBURSEMENT DETAILS</span>
+            <div class="border-box">
+                <div class="detail-row"><span class="label">PAN Card No:</span> ABOFA7356E</div>
+                <div class="detail-row"><span class="label">Account No:</span> ${escapeHtml(row.bankAccountNo || '')}</div>
+                <div class="detail-row"><span class="label">IFSC Code:</span> ${escapeHtml(row.ifscCode || '')}</div>
+                <div class="detail-row"><span class="label">Bank Name/Branch:</span> ${escapeHtml(bankBranch)}</div>
+            </div>
+            <p><strong>Enclosure:</strong> 1. <strong>Original Bill</strong> 2. <strong>Authorization</strong> 3. Discharge summary & Investigation & ID Proof & Implants</p>
+            <p>Thanking you,<br>Yours faithfully,
+            </p>
+            <div class="footer-sign">
+             </div>
+             <div class="sign-block">
+             <strong>Deepak Shriwas</strong><br>
+                    Accounts Department
+                </div>
+            </div>
+        </div>`;
+}
+
+function escapeHtml(text) {
+    return String(text || '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[char]);
+}
+
+function numToIndianWords(num) {
+    const n = Math.floor(Math.abs(num));
+    if (n === 0) return 'Zero';
+    const a = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+    const b = ['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+    const g = (num, suffix) => {
+        if (num === 0) return '';
+        let str = '';
+        if (num > 99) {
+            str += a[Math.floor(num / 100)] + ' Hundred ';
+            num %= 100;
+        }
+        if (num > 0) {
+            if (num < 20) str += a[num] + ' ';
+            else str += b[Math.floor(num / 10)] + (num % 10 ? ' ' + a[num % 10] + ' ' : ' ');
+        }
+        return str + suffix + ' ';
+    };
+    return (g(Math.floor(n / 10000000), 'Crore') + g(Math.floor((n / 100000) % 100), 'Lakh') + g(Math.floor((n / 1000) % 100), 'Thousand') + g(Math.floor((n / 100) % 10), 'Hundred') + g(n % 100, '')).trim();
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return '';
+    const [year, month, day] = dateStr.split('-');
+    return `${day}-${month}-${year}`;
+}
+
+// EXPORT FUNCTION
+
+
+ function exportExcel() {
+        if(patients.length === 0) return alert("No data");
+        const exportAll = confirm("Do you want to export all data?");
+        let dataSource = [];
+        if (exportAll) {
+            dataSource = [...patients];
+        } else {
+            const exportSelected = confirm("Do you want to export selected data?");
+            if (exportSelected) {
+                const selectedData = patients.filter(p => selectedPatientIds.has(p.id));
+                if (selectedData.length) {
+                    dataSource = selectedData;
+                } else {
+                    alert("No rows selected. Exporting filtered data instead.");
+                    dataSource = getFilteredPatients();
+                }
+            } else {
+                dataSource = getFilteredPatients();
+            }
+        }
+        if (!dataSource.length) return alert("No data available to export.");
+        const exportData = dataSource.map((p, i) => ({
+            "S.No": i + 1,
+            "Patient Details": p.name,
+            "UHID": p.uhid,
+            "Mobile Number": p.mobile,
+            "Insurance Limit": p.insuranceLimit,
+            "IPD No": p.ipdNo,
+            "DOA": p.doa,
+            "DOD": p.dod,
+            "TPA/Ins. Name": p.tpa,
+            "Insurance Company": p.insuranceCompany,
+            "Insurance ID No": p.insuranceId,
+            "Claim No": p.claimNo,
+            "Policy No": p.policyNo,
+            "EMP ID No": p.empId,
+            "Bill Invoice No": p.billInvoiceNo,
+            "Total Bill": p.totalBill,
+            "Approved": p.finalApproved,
+            "Discount": p.discount,
+            "Deduction": p.deduction,
+            "Patient Pay": p.patientPay,
+            "Settlement Amount": p.settlementAmount,
+            "TDS Amount": p.tdsAmount,
+            "Payment/UTR": `${p.paymentDate} / ${p.utr}`,
+            "Attender Name": p.contact,
+            "Relation": p.relation,
+            "Insurance Address": p.insuranceAddress,
+            "Bank Name": p.bankName,
+            "Bank Account No.": p.bankAccountNo,
+            "IFSC Code": p.ifscCode,
+            "Bank Address": p.bankAddress,
+            "Courier Details": p.courierDetails,
+            "Courier Date": p.courierDate,
+            "Diagnosis": p.diagnosis,
+            "Surgery Name": p.surgeryName,
+            "Remark": p.remark,
+            "Status": p.status
+        }));
+        const ws = XLSX.utils.json_to_sheet(exportData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Patients");
+        XLSX.writeFile(wb, `Data_Export_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+
+function getSelectedPatientDataForLetter() {
+    return patients.filter(p => selectedPatientIds.has(p.id));
+}
+
+function buildCoverLetterRows(rows) {
+    return rows.map(p => {
+        const insuranceName = p.insuranceCompany || p.tpa || '';
+        const insuranceAddress = p.insuranceAddress || '';
+        return {
+            'Patient Name': p.name || '',
+            'Insurance Name': insuranceName,
+            'TPA/Insurance Name': insuranceName,
+            'Insurance Provider': insuranceName,
+            'Insurance Address': insuranceAddress,
+            'Provider Address': insuranceAddress,
+            'Claim Number': p.claimNo || '',
+            'Member ID': p.insuranceId || '',
+            'Policy Number': p.policyNo || '',
+            'IP ID': p.ipdNo || '',
+            'Billing Number': p.billInvoiceNo || '',
+            'Date of Admission': p.doa || '',
+            'Date of Discharge': p.dod || '',
+            'Approved Amount': p.finalApproved || '',
+            'PAN Number': 'ABOFA7356E',
+            'Account Number': p.bankAccountNo || '',
+            'IFSC Code': p.ifscCode || '',
+            'Bank Name & Branch': p.bankName ? `${p.bankName}${p.bankAddress ? ' - ' + p.bankAddress : ''}` : ''
+        };
+    });
+}
+
+function exportSelectedRowsToLetterExcel(letterData) {
+    const exportRows = letterData.map(({ selected, ...rest }) => rest);
+    const ws = XLSX.utils.json_to_sheet(exportRows, {
+        header: [
+            'Patient Name',
+            'Insurance Name',
+            'Insurance Address',
+            'IP Bill Number',
+            'Policy Number',
+            'Claim Number',
+            'Total Bill Amount',
+            'Hospital Bank Account Number',
+            'IFSC Code',
+            'Date of Admission',
+            'Date of Discharge'
+        ]
+    });
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'LetterData');
+    XLSX.writeFile(wb, `Letter_Data_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+function exportSelectedToCoverLetter() {
+    const selectedRows = getSelectedPatientDataForLetter();
+    if (!selectedRows.length) {
+        alert('Please select at least one row to export to the covering letter generator.');
+        return null;
+    }
+    const letterData = buildCoverLetterRows(selectedRows);
+    localStorage.setItem('hospitalAppLetterTransfer', JSON.stringify(letterData));
+    return letterData;
+}
+
+function exportAndGenerateLetter() {
+    const selectedRows = getSelectedPatientDataForLetter();
+    if (!selectedRows.length) {
+        return alert('Please select at least one row to export and generate the letter.');
+    }
+    const letterData = buildCoverLetterRows(selectedRows);
+    const todayDate = getFormattedTodayDate();
+    localStorage.setItem('hospitalAppLetterTransfer', JSON.stringify(letterData));
+    localStorage.setItem('hospitalAppLetterTransferDate', todayDate);
+    const encodedData = encodeURIComponent(JSON.stringify(letterData));
+    const baseUrl = 'file:///C:/Users/DEEPAK/Downloads/Telegram Desktop/cover letter.html';
+    const letterUrl = `${encodeURI(baseUrl)}#letterData=${encodedData}&letterDate=${encodeURIComponent(todayDate)}`;
+    window.open(letterUrl, '_blank');
+}
+
+function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const data = e.target.result;
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+        if (!rows.length) return alert('No rows found in the imported file.');
+        let importedCount = 0;
+        const importedHashes = new Set();
+
+        function normalizeValue(value) {
+            return String(value || '').trim().toLowerCase();
+        }
+
+        function patientHash(patient) {
+            return fieldIds.map(key => normalizeValue(patient[key])).join('||');
+        }
+
+        function isDuplicatePatient(newPatient) {
+            const hash = patientHash(newPatient);
+            if (importedHashes.has(hash)) return true;
+            return patients.some(p => patientHash(p) === hash);
+        }
+
+        function formatDateToIso(dateStr) {
+            if (!dateStr) return '';
+            dateStr = String(dateStr).trim();
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+            if (/^\d{1,2}-\d{1,2}-\d{4}$/.test(dateStr)) {
+                const parts = dateStr.split('-');
+                return `${parts[2]}-${String(parts[1]).padStart(2, '0')}-${String(parts[0]).padStart(2, '0')}`;
+            }
+            if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateStr)) {
+                const parts = dateStr.split('/');
+                return `${parts[2]}-${String(parts[1]).padStart(2, '0')}-${String(parts[0]).padStart(2, '0')}`;
+            }
+            if (/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(dateStr)) {
+                const parts = dateStr.split('.');
+                return `${parts[2]}-${String(parts[1]).padStart(2, '0')}-${String(parts[0]).padStart(2, '0')}`;
+            }
+            try {
+                const parsed = new Date(dateStr);
+                if (!isNaN(parsed.getTime())) {
+                    const year = parsed.getFullYear();
+                    const month = String(parsed.getMonth() + 1).padStart(2, '0');
+                    const day = String(parsed.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                }
+            } catch (e) {}
+            return dateStr;
+        }
+
+        rows.forEach(row => {
+            const normalized = {};
+            Object.keys(row).forEach(key => {
+                normalized[String(key).trim().toLowerCase()] = row[key];
+            });
+            
+            const doa = normalized['doa'] || normalized['doa (admission)'] || normalized['doa / dod']?.split('/')[0]?.trim() || '';
+            const dod = normalized['dod'] || normalized['dod (discharge)'] || normalized['doa / dod']?.split('/')[1]?.trim() || '';
+            let doaFormatted = formatDateToIso(doa);
+            let dodFormatted = formatDateToIso(dod);
+            
+            let paymentDate = normalized['pay_date'] || normalized['payment date'] || normalized['payment_date'] || '';
+            let utr = normalized['utr'] || '';
+            const paymentUtr = normalized['payment/utr'] || '';
+            if (paymentUtr && !paymentDate && !utr) {
+                const parts = paymentUtr.split('/').map(p => p.trim());
+                paymentDate = parts[0] || '';
+                utr = parts[1] || '';
+            }
+            paymentDate = formatDateToIso(paymentDate);
+            
+            const obj = {
+                name: normalized['patient details'] || normalized['name'] || normalized['patient name'] || normalized['patient_name'] || normalized['patient'] || '',
+                uhid: normalized['uhid'] || normalized['u.h.i.d'] || normalized['unique health id'] || '',
+                mobile: normalized['mobile number'] || normalized['mobile'] || normalized['mobile no'] || normalized['mobile_no'] || normalized['phone'] || normalized['contact number'] || '',
+                insuranceLimit: normalized['insurance limit'] || normalized['insurance_limit'] || '',
+                ipdNo: normalized['ipd no'] || normalized['ipd'] || normalized['ipd_no'] || '',
+                billInvoiceNo: normalized['bill invoice no'] || normalized['invoice no'] || normalized['invoice'] || normalized['bill invoice'] || '',
+                tpa: normalized['tpa/ins. name'] || normalized['tpa'] || normalized['tpa/insurance name'] || normalized['insurance name'] || '',
+                insuranceCompany: normalized['insurance company'] || normalized['insurance_company'] || '',
+                insuranceAddress: normalized['insurance address'] || normalized['insurance_address'] || normalized['provider address'] || '',
+                diagnosis: normalized['diagnosis'] || normalized['diagnosis details'] || '',
+                bankName: normalized['bank name'] || normalized['bank_name'] || normalized['bank'] || '',
+                bankAccountNo: normalized['bank account no.'] || normalized['bank account number'] || normalized['bank_account_number'] || normalized['account number'] || normalized['account_no'] || '',
+                ifscCode: normalized['ifsc code'] || normalized['ifsc_code'] || normalized['ifsc'] || '',
+                bankAddress: normalized['bank address'] || normalized['bank_address'] || '',
+                doa: doaFormatted,
+                dod: dodFormatted,
+                totalBill: normalized['total bill'] || normalized['bill'] || normalized['total_bill'] || '',
+                finalApproved: normalized['approved'] || normalized['final approved'] || normalized['final_approved'] || '',
+                discount: normalized['discount'] || normalized['disc'] || '',
+                deduction: normalized['deduction'] || normalized['ded'] || '',
+                patientPay: normalized['patient pay'] || normalized['patient_pay'] || normalized['patient pay amount'] || '',
+                settlementAmount: normalized['settlement amount'] || normalized['settlement_amount'] || '',
+                tdsAmount: normalized['tds amount'] || normalized['tds_amount'] || normalized['tds'] || '',
+                paymentDate: paymentDate,
+                utr: utr,
+                insuranceId: normalized['insurance id no'] || normalized['insurance id'] || normalized['insurance_id'] || '',
+                claimNo: normalized['claim no'] || normalized['claim number'] || normalized['claim_number'] || normalized['claim'] || '',
+                policyNo: normalized['policy no'] || normalized['policy_no'] || normalized['policy'] || '',
+                empId: normalized['emp id no'] || normalized['emp id'] || normalized['emp_id'] || normalized['employee id'] || '',
+                contact: normalized['attender name'] || normalized['contact'] || normalized['attender contact'] || normalized['attender'] || normalized['attender contact number'] || '',
+                relation: normalized['relation'] || '',
+                courierDetails: normalized['courier details'] || '',
+                courierDate: formatDateToIso(normalized['courier date'] || ''),
+                surgeryName: normalized['surgery name'] || normalized['surgery_Name'] || '',
+                remark: normalized['remark'] || '',
+                status: normalized['status'] || '',
+                paymentStatus: normalized['payment status'] || normalized['pay_status'] || normalized['payment_status'] || ''
+            };
+            if (!(obj.name || obj.uhid || obj.billInvoiceNo)) return;
+            if (isDuplicatePatient(obj)) return;
+            ensurePatientId(obj);
+            patients.push(obj);
+            importedHashes.add(patientHash(obj));
+            importedCount++;
+        });
+        if (!importedCount) return alert('No valid records found to import.');
+        save();
+        render();
+        alert(`Imported ${importedCount} records successfully.`);
+        event.target.value = '';
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+//  SYNC IN GOOGLE SHEET DEPLOY
+
+
+  async function syncToGoogleSheet(isManual = true) {
+        const url = "https://script.google.com/macros/s/AKfycbykt0CDbQcl337GGY79W55JOXH1qEhvcm0vPFarHMTOkD4l-MLEkVC5BmeYBcig2_8/exec"; 
+        if(!patients.length) {
+            if (isManual) alert("No data to sync.");
+            return;
+        }
+        const btn = document.getElementById("syncBtn");
+        if (isManual) btn.innerText = "Syncing...";
+        try {
+            const syncData = patients.map((p, i) => ({
+                patientName: p.name || '-',
+                uhid: p.uhid || '-',
+                mobile: p.mobile || '-',
+                insuranceLimit: p.insuranceLimit || '-',
+                ipdNo: p.ipdNo || '-',
+                tpaInsName: p.tpa || '-',
+                settlementSummary: p.insuranceCompany || '-',
+                doa: p.doa || '-',
+                dod: p.dod || '-',
+                insuranceIdNo: p.insuranceId || '-',
+                claimNo: p.claimNo || '-',
+                policyNo: p.policyNo || '-',
+                empIdNo: p.empId || '-',
+                billInvoiceNo: p.billInvoiceNo || '-',
+                totalBill: p.totalBill || '',
+                approved: p.finalApproved || '',
+                discount: p.discount || '',
+                deduction: p.deduction || '',
+                patientPay: p.patientPay || '',
+                settlementAmount: p.settlementAmount || '',
+                tdsAmount: p.tdsAmount || '',
+                paymentUtr: `${p.paymentDate||'-'} ${p.utr||'-'}`,
+                attenderName: p.contact || '-',
+                relation: p.relation || '-',
+                insuranceAddress: p.insuranceAddress || '-',
+                bankName: p.bankName || '-',
+                bankAccountNo: p.bankAccountNo || '-',
+                ifscCode: p.ifscCode || '-',
+                bankAddress: p.bankAddress || '-',
+                courierDetails: p.courierDetails || '-',
+                courierDate: p.courierDate || '-',
+                insuranceCompany: p.insuranceCompany || '-',
+                diagnosis: p.diagnosis || '-',
+                surgeryName: p.surgeryName || '-',
+                remark: p.remark || '-',
+                status: p.status || '-'
+            }));
+            // Debug: Log the data being sent
+            console.log("Data being sent to Google Sheets:", syncData);
+            
+            const response = await fetch(url, {
+                method: "POST",
+                body: JSON.stringify(syncData)
+            });
+            if (response.ok) {
+                alert("Synced successfully!");
+                console.log("Auto-sync completed successfully at:", new Date().toLocaleString());
+            } else {
+                const errorText = await response.text();
+                console.error("Sync failed", response.status, response.statusText, errorText);
+                if (isManual) alert(`Sync failed: ${response.status} ${response.statusText}`);
+            }
+        } catch (e) {
+            console.error("Error connecting to script:", e);
+            if (isManual) alert("Error connecting to script. Check console for details.");
+        }
+        finally { 
+            if (isManual) btn.innerText = "Sync to Google Sheets"; 
+        }
+    }
+
+// Automatic sync every 10 minutes
+let autoSyncInterval;
+const AUTO_SYNC_KEY = 'hospitalAppAutoSyncEnabled';
+
+function isAutoSyncEnabled() {
+    return localStorage.getItem(AUTO_SYNC_KEY) === 'true';
+}
+
+function setAutoSyncEnabled(value) {
+    localStorage.setItem(AUTO_SYNC_KEY, value ? 'true' : 'false');
+}
+
+function updateAutoSyncUI() {
+    const enabled = isAutoSyncEnabled();
+    const btn = document.getElementById('toggleAutoSyncBtn');
+    if (btn) {
+        btn.innerText = enabled ? 'Auto Sync: ON' : 'Auto Sync: OFF';
+        btn.style.background = enabled ? '#28a745' : '#6c757d';
+    }
+}
+
+function toggleAutoSync() {
+    const enabled = !isAutoSyncEnabled();
+    setAutoSyncEnabled(enabled);
+    updateAutoSyncUI();
+    if (enabled) {
+        syncToGoogleSheet(false);
+        startAutoSync();
+    } else {
+        stopAutoSync();
+    }
+}
+
+function stopAutoSync() {
+    if (autoSyncInterval) {
+        clearInterval(autoSyncInterval);
+        autoSyncInterval = null;
+        console.log('Auto-sync stopped');
+    }
+}
+
+function loadAutoSyncSetting() {
+    updateAutoSyncUI();
+    if (isAutoSyncEnabled()) {
+        startAutoSync();
+    }
+}
+
+function startAutoSync() {
+    if (autoSyncInterval) clearInterval(autoSyncInterval);
+    autoSyncInterval = setInterval(() => {
+        console.log('Auto-sync triggered at:', new Date().toLocaleString());
+        syncToGoogleSheet(false);
+    }, 10 * 60 * 1000);
+    console.log('Auto-sync started - will sync every 10 minutes');
+}
+
+window.addEventListener('load', loadAutoSyncSetting);
+
+
+// INVOICE CALCULATION FUNCTIONS & DYNAMIC ROWS
+
+function toggleInvoiceSection() {
+    const invoiceSection = document.getElementById('invoiceSection');
+    invoiceSection.classList.toggle('show');
+    if (invoiceSection.classList.contains('show')) {
+        invoiceSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+//                 for email id opne 
+function openExcelSheet() {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([[]]);
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    XLSX.writeFile(wb, "NewSheet.xlsx");
+}
+
+function openSpreadsheet() {
+    window.open('https://docs.google.com/spreadsheets/d/1zdbnr7iGQ4xbKRNOVFrae_g31Gk7_ws085vRZD1-6eo/edit?usp=sharing', '_blank');
+}
+
+let invoiceRowData = [
+    { gst: 5, mrp: 0.00, qty: 1 },
+    { gst: 5, mrp: 0.00, qty: 1 },
+    { gst: 5, mrp: 0.00, qty: 1 },
+    { gst: 5, mrp: 0.00, qty: 1 },
+    { gst: 5, mrp: 0.00, qty: 1 },
+    { gst: 5, mrp: 0.00, qty: 1 }
+];
+
+function renderInvoiceRows() {
+    const tbody = document.getElementById('invoiceRows');
+    tbody.innerHTML = '';
+    invoiceRowData.forEach((row, idx) => {
+        tbody.innerHTML += `
+        <tr class="item-row">
+            <td>${idx + 1}</td>
+            <td><input type="number" class="gst-input" value="${row.gst}" onchange="updateInvoiceRow(${idx}, 'gst', this.value)"></td>
+            <td><input type="number" class="mrp-input" value="${row.mrp}" step="0.01" onchange="updateInvoiceRow(${idx}, 'mrp', this.value)"></td>
+            <td><input type="number" class="qty-input" value="${row.qty}" onchange="updateInvoiceRow(${idx}, 'qty', this.value)"></td>
+            <td class="rate-cell">0.00</td>
+            <td class="right amount-cell">0.00</td>
+        </tr>`;
+    });
+    invoiceCalculate();
+}
+
+function addInvoiceRow() {
+    invoiceRowData.push({ gst: 5, mrp: 0.00, qty: 1 });
+    renderInvoiceRows();
+}
+
+function removeInvoiceRow() {
+    if (invoiceRowData.length > 1) {
+        invoiceRowData.pop();
+        renderInvoiceRows();
+    }
+}
+
+function updateInvoiceRow(idx, field, value) {
+    invoiceRowData[idx][field] = parseFloat(value) || 0;
+    renderInvoiceRows();
+}
+
+function invoiceCalculate() {
+    const rows = document.querySelectorAll('.item-row');
+    let totalAmount = 0;
+    let totalGstAmount = 0;
+
+    rows.forEach((row, i) => {
+        const gst = parseFloat(invoiceRowData[i].gst) || 0;
+        const mrp = parseFloat(invoiceRowData[i].mrp) || 0;
+        const qty = parseFloat(invoiceRowData[i].qty) || 0;
+        const gstAmountPerUnit = Math.round((mrp * gst / (100 + gst)) * 100) / 100;
+        const rate = mrp - gstAmountPerUnit;
+        const amount = qty * rate;
+        const gstTotal = qty * gstAmountPerUnit;
+
+        row.querySelector('.rate-cell').textContent = rate.toFixed(2);
+        row.querySelector('.amount-cell').textContent = amount.toFixed(2);
+
+        totalAmount += amount;
+        totalGstAmount += gstTotal;
+    });
+
+    const cgst = totalGstAmount / 2;
+    const sgst = totalGstAmount / 2;
+    const totalGst = totalGstAmount;
+    const grandTotal = totalAmount + totalGstAmount;
+    const grandTotalFixed = parseFloat(grandTotal.toFixed(2));
+    const totalGstFixed = parseFloat(totalGst.toFixed(2));
+
+    document.getElementById('cgst').textContent = cgst.toFixed(2);
+    document.getElementById('sgst').textContent = sgst.toFixed(2);
+    document.getElementById('totalGst').textContent = totalGstFixed.toFixed(2);
+    document.getElementById('invoiceAmountSum').textContent = totalAmount.toFixed(2);
+    document.getElementById('invoiceGstSum').textContent = totalGstFixed.toFixed(2);
+    document.getElementById('invoiceGrandTotalSum').textContent = grandTotalFixed.toFixed(2);
+
+    // Dynamically set font size based on amount
+    const totalAmountElem = document.getElementById('totalAmount');
+    totalAmountElem.textContent = grandTotalFixed.toFixed(2);
+    let fontSize = 18; // base font size in px
+    if (grandTotalFixed > 10000) fontSize = 22;
+    if (grandTotalFixed > 50000) fontSize = 28;
+    if (grandTotalFixed > 100000) fontSize = 36;
+    if (grandTotalFixed > 500000) fontSize = 44;
+    if (grandTotalFixed > 1000000) fontSize = 54;
+    totalAmountElem.style.fontSize = fontSize + 'px';
+
+    document.getElementById('gstAmountWords').textContent = invoiceNumberToWords(totalGstFixed) + ' Only';
+    document.getElementById('amountWords').textContent = invoiceNumberToWords(grandTotalFixed) + ' Only';
+}
+
+renderInvoiceRows();
+
+function invoiceNumberToWords(amount) {
+    const units = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+    const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+    const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+    const scales = ['', 'Thousand', 'Lakh', 'Crore'];
+
+    function twoDigitWord(n) {
+        if (n < 10) return units[n];
+        if (n < 20) return teens[n - 10];
+        const ten = Math.floor(n / 10);
+        const unit = n % 10;
+        return tens[ten] + (unit ? ' ' + units[unit] : '');
+    }
+
+    function threeDigitWord(n) {
+        const hundred = Math.floor(n / 100);
+        const remainder = n % 100;
+        return (hundred ? units[hundred] + ' Hundred' + (remainder ? ' ' : '') : '') + (remainder ? twoDigitWord(remainder) : '');
+    }
+
+    if (amount === 0) return 'Zero Rupees';
+
+    const [integerPart, decimalPart] = amount.toFixed(2).split('.');
+    let n = parseInt(integerPart, 10);
+    const words = [];
+
+    const groups = [];
+    groups.push(n % 1000);
+    n = Math.floor(n / 1000);
+    groups.push(n % 100);
+    n = Math.floor(n / 100);
+    groups.push(n % 100);
+    n = Math.floor(n / 100);
+    groups.push(n);
+
+    for (let i = 0; i < groups.length; i++) {
+        const groupValue = groups[i];
+        if (groupValue) {
+            const scale = scales[i];
+            const groupWords = i === 0 ? threeDigitWord(groupValue) : twoDigitWord(groupValue);
+            words.unshift(groupWords + (scale ? ' ' + scale : ''));
+        }
+    }
+
+    const paise = parseInt(decimalPart, 10);
+    const paiseWords = paise ? ' and ' + twoDigitWord(paise) + ' Paise' : '';
+    return words.join(' ') + ' Rupees' + paiseWords;
+}
+
+render();
+
+// Load saved folder path on page load
+loadFolderPathSetting();
+
+// ============================================
+// FOLDER PATH SETTINGS
+// ============================================
+
+/**
+ * Toggle folder settings panel visibility
+ */
+function toggleFolderSettings() {
+    const panel = document.getElementById('folderSettingsPanel');
+    if (panel.style.display === 'none') {
+        panel.style.display = 'block';
+        loadFolderPathSetting();
+    } else {
+        panel.style.display = 'none';
+    }
+}
+
+/**
+ * Load saved folder path from localStorage on page load
+ */
+function loadFolderPathSetting() {
+    const savedPath = localStorage.getItem('patientFolderPath');
+    if (savedPath) {
+        document.getElementById('folderPath').value = savedPath;
+        document.getElementById('currentPathDisplay').textContent = savedPath;
+        console.log("[DEBUG] Loaded folder path:", savedPath);
+    } else {
+        // Default to Desktop
+        const desktopPath = "C:\\Users\\DEEPAK\\Desktop";
+        document.getElementById('folderPath').value = desktopPath;
+        document.getElementById('currentPathDisplay').textContent = desktopPath;
+        localStorage.setItem('patientFolderPath', desktopPath);
+    }
+}
+
+/**
+ * Handle folder select change
+ */
+function onFolderSelectChange() {
+    const selected = document.getElementById('folderSelect').value;
+    if (selected) {
+        document.getElementById('folderPath').value = selected;
+        saveFolderPath();
+        // Reset select to default
+        document.getElementById('folderSelect').value = '';
+    }
+}
+
+/**
+ * Save folder path to localStorage
+ */
+function saveFolderPath() {
+    const inputPath = document.getElementById('folderPath').value.trim();
+    
+    if (!inputPath || inputPath === '') {
+        showNotification('❌ Please enter a valid folder path', 'error');
+        return;
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('patientFolderPath', inputPath);
+    document.getElementById('currentPathDisplay').textContent = inputPath;
+    
+    console.log("[DEBUG] Saved folder path:", inputPath);
+    showNotification('✓ Folder path saved successfully!\n' + inputPath, 'success');
+}
+
+/**
+ * Reset folder path to Desktop
+ */
+function resetFolderPath() {
+    const desktopPath = "C:\\Users\\DEEPAK\\Desktop";
+    document.getElementById('folderPath').value = desktopPath;
+    localStorage.setItem('patientFolderPath', desktopPath);
+    document.getElementById('currentPathDisplay').textContent = desktopPath;
+    console.log("[DEBUG] Reset folder path to:", desktopPath);
+    showNotification("✓ Reset to Desktop!\n" + desktopPath, "success");
+}
+
+// ============================================
+// AUTO-CREATE PATIENT FOLDER ON DISCHARGE
+// ============================================
+
+/**
+ * Create ONLY: [Custom Path]/[Patient Name (TPA) admission date]/
+ * No subfolders, no files
+ */
+async function createPatientFolderLocally(patientName) {
+    try {
+        console.log("[DEBUG] createPatientFolderLocally called with:", patientName);
+        
+        if (!patientName || patientName.trim() === '') {
+            console.log("[DEBUG] Patient name is empty!");
+            showNotification('Patient name is required', 'error');
+            return false;
+        }
+        
+        showNotification('Creating folder...', 'info');
+        
+        // Get TPA and DOA from form
+        const tpa = document.getElementById("tpa").value.trim();
+        const doa = document.getElementById("doa").value.trim();
+        
+        // Get the saved folder path
+        const folderPath = localStorage.getItem('patientFolderPath') || "C:\\Users\\DEEPAK\\Desktop";
+        
+        console.log("[DEBUG] Folder values - Name:", patientName, "TPA:", tpa, "DOA:", doa);
+        console.log("[DEBUG] Base folder path:", folderPath);
+        
+        // Call Python backend server
+        console.log("[DEBUG] Sending request to http://localhost:5000/api/create-folder");
+        
+        const response = await fetch('http://localhost:5000/api/create-folder', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                patientName: patientName,
+                tpa: tpa,
+                doa: doa,
+                baseFolderPath: folderPath
+            })
+        });
+        
+        console.log("[DEBUG] Response status:", response.status);
+        
+        const result = await response.json();
+        
+        console.log("[DEBUG] Response data:", result);
+        
+        if (result.success) {
+            const folderName = result.folder_name || `${patientName} (${tpa}) ${doa}`;
+            showNotification(
+                `✓ SUCCESS!\nFolder: ${folderName}\nPath: ${result.folder_path}`,
+                'success'
+            );
+            console.log('Folder created:', result);
+            return true;
+        } else {
+            console.log("[DEBUG] Server returned success: false");
+            showNotification('❌ Error: ' + result.message, 'error');
+            return false;
+        }
+    } catch (error) {
+        console.error('Folder creation error:', error);
+        showNotification(
+            '❌ Server not running!\nRun: python folder_creator.py',
+            'error'
+        );
+        return false;
+    }
+}
+
+/**
+ * Show notification to user
+ */
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: bold;
+        z-index: 10000;
+        animation: slideIn 0.3s ease-out;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        max-width: 400px;
+        word-wrap: break-word;
+    `;
+    
+    if (type === 'success') {
+        notification.style.background = '#28a745';
+        notification.style.color = 'white';
+        notification.innerHTML = message;
+    } else if (type === 'error') {
+        notification.style.background = '#dc3545';
+        notification.style.color = 'white';
+        notification.innerHTML = message;
+    } else {
+        notification.style.background = '#17a2b8';
+        notification.style.color = 'white';
+        notification.innerHTML = message;
+    }
+    
+    document.body.appendChild(notification);
+    
+    // Add animation styles if not already in document
+    if (!document.getElementById('notificationStyles')) {
+        const style = document.createElement('style');
+        style.id = 'notificationStyles';
+        style.innerHTML = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Remove notification after 5 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-out forwards';
+        setTimeout(() => notification.remove(), 300);
+    }, 5000);
+}
+
+/**
+ * Add patient WITH folder creation when status = "Discharge Approved"
+ */
+function addPatientWithFolderCreation() {
+    const uhidValue = document.getElementById("uhid").value.trim();
+    const nameValue = document.getElementById("name").value.trim();
+    const statusValue = document.getElementById("status").value;
+    
+    console.log("[DEBUG] Add patient - Status:", statusValue);
+    
+    if (!uhidValue) return alert("UHID required");
+    
+    const existing = findExistingPatient(uhidValue);
+    let obj = buildPatientFromForm();
+    
+    if (existing) {
+        const reAdmit = confirm("This patient is already in the system. Would you like to re-admit them?");
+        if (!reAdmit) return;
+        // Populate form with existing data for re-admission (excludes ipdNo and doa)
+        populateFormForReAdmit(existing);
+        // Rebuild object after populating form
+        obj = buildPatientFromForm();
+        delete obj.id;
+    }
+    
+    ensurePatientId(obj);
+    patients.push(obj);
+    
+    // Create folder if status is "Discharge Approved"
+    if (statusValue === "Discharge Approved") {
+        console.log("[DEBUG] Creating folder for:", nameValue);
+        createPatientFolderLocally(nameValue);
+    } else {
+        console.log("[DEBUG] Status is NOT 'Discharge Approved', skipping folder creation");
+    }
+    
+    clearForm();
+    save();
+    render();
+}
+
+/**
+ * Update patient WITH folder creation when status = "Discharge Approved"
+ */
+function updatePatientWithFolderCreation() {
+    const statusValue = document.getElementById("status").value;
+    const patientName = document.getElementById("name").value.trim();
+    
+    // Update the patient record
+    fieldIds.forEach(id => patients[editIndex][id] = document.getElementById(id).value);
+    
+    // Create folder if status is "Discharge Approved"
+    if (statusValue === "Discharge Approved") {
+        createPatientFolderLocally(patientName);
+    }
+    
+    editIndex = -1;
+    document.getElementById("addBtn").style.display = "inline-block";
+    document.getElementById("updateBtn").style.display = "none";
+    clearForm();
+    save();
+    render();
+}
+
+/**
+ * Export all patient folders as Excel for backup
+ */
+function exportPatientFolders() {
+    const patientFolders = JSON.parse(localStorage.getItem('patientFolders')) || {};
+    
+    if (Object.keys(patientFolders).length === 0) {
+        alert('No patient folders to export');
+        return;
+    }
+    
+    const exportData = Object.entries(patientFolders).map(([name, folder]) => ({
+        'Patient Name': name,
+        'Created Date': new Date(folder.created).toLocaleDateString(),
+        'Status': folder.data.status || '',
+        'UHID': folder.data.uhid || '',
+        'Mobile': folder.data.mobile || '',
+        'Insurance': folder.data.tpa || '',
+        'Total Bill': folder.data.totalBill || '',
+        'Approved': folder.data.finalApproved || ''
+    }));
+    
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Patient Folders');
+    XLSX.writeFile(wb, `Patient_Folders_${new Date().toISOString().slice(0,10)}.xlsx`);
+    
+    showNotification('✓ Patient folders exported to Excel!', 'success');
+}
+
+// Add export button click handler
+window.addEventListener('load', function() {
+    // You can add a button to export patient folders if needed
+    console.log('Patient Folder System Ready!');
+    console.log('Total folders:', Object.keys(JSON.parse(localStorage.getItem('patientFolders')) || {}).length);
+});
+</script>
+</body>
+</html>
